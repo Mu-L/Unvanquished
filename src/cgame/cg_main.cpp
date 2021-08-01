@@ -722,51 +722,14 @@ bool CG_FileExists( const char *filename )
 	return trap_FS_FOpenFile( filename, nullptr, fsMode_t::FS_READ );
 }
 
-/*
-======================
-CG_UpdateLoadingProgress
-
-======================
-*/
-
-enum loadingBar_t {
-	LOADBAR_MEDIA,
-	LOADBAR_CHARACTER_MODELS,
-	LOADBAR_BUILDABLES
-};
-
-static void CG_UpdateLoadingProgress( loadingBar_t progressBar, float progress, const char *label )
+static void CG_UpdateMediaFraction( float fraction )
 {
-	if(!cg.loading)
-		return;
-
-	switch (progressBar) {
-		case LOADBAR_MEDIA:
-			cg.mediaFraction = progress;
-			break;
-		case LOADBAR_CHARACTER_MODELS:
-			cg.charModelFraction = progress;
-			break;
-		case LOADBAR_BUILDABLES:
-			cg.buildablesFraction = progress;
-			break;
-		default:
-			break;
-	}
-
-	Q_strncpyz(cg.currentLoadingLabel, label, sizeof( cg.currentLoadingLabel ) );
-
-	trap_UpdateScreen();
-}
-
-static void CG_UpdateMediaFraction( float newFract )
-{
-	cg.mediaFraction = newFract;
+	cg.mediaLoadingFraction = fraction;
 	trap_UpdateScreen();
 }
 
 enum {
-	LOAD_START = 1,
+	LOAD_START = 0,
 	LOAD_TRAILS,
 	LOAD_PARTICLES,
 	LOAD_SOUNDS,
@@ -777,74 +740,93 @@ enum {
 	LOAD_UPGRADES,
 	LOAD_CLASSES,
 	LOAD_BUILDINGS,
+	LOAD_VOICES,
+	LOAD_CLIENTS,
 	LOAD_REMAINING,
 	LOAD_DONE
 } typedef cgLoadingStep_t;
 
+/*
+======================
+CG_UpdateLoadingProgress
+
+======================
+*/
+
+static void CG_UpdateLoadingProgress( int step, const char *label )
+{
+	cg.loadingFraction = ( 1.0f * step ) / LOAD_DONE;
+
+	Q_strncpyz( cg.loadingText, label, sizeof( cg.loadingText ) );
+
+	Log::Notice( "Loading: %d%% %s", static_cast<int>( 100 * cg.loadingFraction ), cg.loadingText );
+
+	if( cg.loading )
+	{
+		trap_UpdateScreen();
+	}
+}
+
 static void CG_UpdateLoadingStep( cgLoadingStep_t step )
 {
-#if 0
-	static int startTime = 0;
-	static int lastStepTime = 0;
-	const int thisStepTime = trap_Milliseconds();
-
 	switch (step) {
 		case LOAD_START:
-			startTime = thisStepTime;
-			Log::Notice("^4%%^5 Start loading.");
-			break;
-		case LOAD_DONE:
-			Log::Notice("^4%%^5 Done loading everything after %is (%ims).",
-					(thisStepTime - startTime)/1000, (thisStepTime - startTime));
-			break;
-		default:
-			Log::Notice("^4%%^5 Done with Step %i after %is (%ims)… Starting Step %i",
-					step - 1, (thisStepTime - lastStepTime)/1000, (thisStepTime - lastStepTime), step );
-			break;
-	}
-	lastStepTime = thisStepTime;
-#endif
-
-	switch (step) {
-		case LOAD_START:
+			/* Note: this is too early to do screen updates,
+			so set cg.loading to true after printing the log. */
+			CG_UpdateLoadingProgress( step, choose("Calling home…", "Sending to the front…", nullptr) );
 			cg.loading = true;
-			cg.mediaFraction = cg.charModelFraction = cg.buildablesFraction = 0.0f;
 			break;
 
 		case LOAD_TRAILS:
-			CG_UpdateLoadingProgress( LOADBAR_MEDIA, 0.0f, choose("Tracking your movements", "Letting out the magic smoke", nullptr) );
+			CG_UpdateLoadingProgress( step, choose("Tracking your movements…", "Letting out the magic smoke…", nullptr) );
 			break;
+
 		case LOAD_PARTICLES:
-			CG_UpdateLoadingProgress( LOADBAR_MEDIA, 0.05f, choose("Collecting bees for the hives", "Initialising fireworks", "Causing electrical faults", nullptr) );
+			CG_UpdateLoadingProgress( step, choose("Collecting bees for the hives…", "Initialising fireworks…", "Causing electrical faults…", nullptr) );
 			break;
+
 		case LOAD_SOUNDS:
-			CG_UpdateLoadingProgress( LOADBAR_MEDIA, 0.08f, choose("Recording granger purring", "Generating annoying noises", nullptr) );
+			CG_UpdateLoadingProgress( step, choose("Generating annoying noises…", "Singing the marauder a lullaby…", nullptr) );
 			break;
+
 		case LOAD_GEOMETRY:
-			CG_UpdateLoadingProgress( LOADBAR_MEDIA, 0.60f, choose("Hello World!", "Making a scene.", nullptr) );
+			CG_UpdateLoadingProgress( step, choose("Hello World!", "Making a scene…", nullptr) );
 			break;
+
 		case LOAD_ASSETS:
-			CG_UpdateLoadingProgress( LOADBAR_MEDIA, 0.63f, choose("Taking pictures of the world", "Using your laptop's camera", "Adding texture to concrete", "Drawing smiley faces", nullptr) );
+			CG_UpdateLoadingProgress( step, choose("Taking pictures of the world…", "Using your laptop's camera…", "Adding texture to concrete…", "Drawing smiley faces…", nullptr) );
 			break;
+
 		case LOAD_CONFIGS:
-			CG_UpdateLoadingProgress( LOADBAR_MEDIA, 0.80f, choose("Reading the manual", "Looking at blueprints", nullptr) );
+			CG_UpdateLoadingProgress( step, choose("Reading the manual…", "Looking at blueprints…", nullptr) );
 			break;
+
 		case LOAD_WEAPONS:
-			CG_UpdateLoadingProgress( LOADBAR_MEDIA, 0.90f, choose("Setting up the armoury", "Sharpening the aliens' claws", "Overloading lucifer cannons", nullptr) );
+			CG_UpdateLoadingProgress( step, choose("Setting up the armoury…", "Sharpening the aliens' claws…", "Overloading lucifer cannons…", nullptr) );
 			break;
+
 		case LOAD_UPGRADES:
-		case LOAD_CLASSES:
-			CG_UpdateLoadingProgress( LOADBAR_MEDIA, 0.95f, choose("Charging battery packs", "Replicating alien DNA", "Packing tents for jetcampers", nullptr) );
+			CG_UpdateLoadingProgress( step, choose("Going in search for the radar…", "Spinning silk for reticles…", nullptr) );
 			break;
+
+		case LOAD_CLASSES:
+			CG_UpdateLoadingProgress( step, choose("Serving the tyrant's meal…", "Petting battlesuits…", nullptr) );
+			break;
+
 		case LOAD_BUILDINGS:
-			cg.mediaFraction = 1.0f;
-			CG_UpdateLoadingProgress( LOADBAR_BUILDABLES, 0.0f, choose("Finishing construction", "Adding turret spam", "Awakening the overmind", nullptr) );
+			CG_UpdateLoadingProgress( step, choose("Finishing construction…", "Adding turret spam…", "Awakening the overmind…", nullptr) );
+			break;
+
+		case LOAD_VOICES:
+			CG_UpdateLoadingProgress( step, choose("Recording granger purring…", "Selling tickets for dragoon gig…", nullptr) );
+			break;
+
+		case LOAD_CLIENTS:
+			CG_UpdateLoadingProgress( step, choose("Teleporting soldiers…", "Parenting dretches…", "Replicating alien DNA…", nullptr) );
 			break;
 
 		case LOAD_DONE:
-			cg.mediaFraction = cg.charModelFraction = cg.buildablesFraction = 1.0f;
-			Q_strncpyz(cg.currentLoadingLabel, "Done!", sizeof( cg.currentLoadingLabel ) );
-			trap_UpdateScreen();
+			CG_UpdateLoadingProgress( step, "Done!" );
 			cg.loading = false;
 			break;
 
@@ -1105,7 +1087,7 @@ static void CG_RegisterGraphics()
 
 	cgs.media.scopeShader = trap_R_RegisterShader( "gfx/weapons/scope", (RegisterShaderFlags_t) ( RSF_NOMIP ) );
 
-	CG_UpdateMediaFraction( 0.7f );
+	CG_UpdateMediaFraction( 0.2f );
 
 	memset( cg_weapons, 0, sizeof( cg_weapons ) );
 	memset( cg_upgrades, 0, sizeof( cg_upgrades ) );
@@ -1200,7 +1182,7 @@ static void CG_RegisterGraphics()
 		cgs.gameModels[ i ] = trap_R_RegisterModel( modelName );
 	}
 
-	CG_UpdateMediaFraction( 0.75f );
+	CG_UpdateMediaFraction( 0.4f );
 
 	// register all the server specified shaders
 	for ( i = 1; i < MAX_GAME_SHADERS; i++ )
@@ -1217,7 +1199,7 @@ static void CG_RegisterGraphics()
 		cgs.gameShaders[ i ] = trap_R_RegisterShader(shaderName, RSF_DEFAULT);
 	}
 
-	CG_UpdateMediaFraction( 0.77f );
+	CG_UpdateMediaFraction( 0.6f );
 
 	// register all the server specified grading textures
 	// starting with the world wide one
@@ -1233,7 +1215,7 @@ static void CG_RegisterGraphics()
 		CG_RegisterReverb( i, CG_ConfigString( CS_REVERB_EFFECTS + i ) );
 	}
 
-	CG_UpdateMediaFraction( 0.79f );
+	CG_UpdateMediaFraction( 0.8f );
 
 	// register all the server specified particle systems
 	for ( i = 1; i < MAX_GAME_PARTICLE_SYSTEMS; i++ )
@@ -1249,6 +1231,8 @@ static void CG_RegisterGraphics()
 
 		cgs.gameParticleSystems[ i ] = CG_RegisterParticleSystem( ( char * ) psName );
 	}
+
+	CG_UpdateMediaFraction( 1.0f );
 }
 
 /*
@@ -1283,15 +1267,13 @@ static void CG_RegisterClients()
 {
 	int i;
 
-	cg.charModelFraction = 0.0f;
-
 	//precache all the models/sounds/etc
 	for ( i = PCL_NONE + 1; i < PCL_NUM_CLASSES; i++ )
 	{
 		CG_PrecacheClientInfo( (class_t) i, BG_ClassModelConfig( i )->modelName,
 		                       BG_ClassModelConfig( i )->skinName );
 
-		cg.charModelFraction = ( float ) i / ( float ) PCL_NUM_CLASSES;
+		cg.characterLoadingFraction = ( float ) i / ( float ) PCL_NUM_CLASSES / 2;
 		trap_UpdateScreen();
 	}
 
@@ -1319,7 +1301,7 @@ static void CG_RegisterClients()
 	    "models/players/human_base/jetpack.iqm:slidein",
 	    false, false, false );
 
-	cg.charModelFraction = 1.0f;
+	cg.characterLoadingFraction = 0.7f;
 	trap_UpdateScreen();
 
 	//load all the clientinfos of clients already connected to the server
@@ -1336,6 +1318,9 @@ static void CG_RegisterClients()
 
 		CG_NewClientInfo( i );
 	}
+
+	cg.characterLoadingFraction = 1.0f;
+	trap_UpdateScreen();
 
 	CG_BuildSpectatorString();
 }
@@ -1442,7 +1427,6 @@ void CG_Init( int serverMessageNum, int clientNum, const glconfig_t& gl, const G
 	CG_InitConsoleCommands();
 	trap_S_BeginRegistration();
 
-
 	cg.weaponSelect = WP_NONE;
 
 	// old servers
@@ -1473,6 +1457,7 @@ void CG_Init( int serverMessageNum, int clientNum, const glconfig_t& gl, const G
 
 	// load the new map
 	trap_CM_LoadMap(cgs.mapname);
+
 	CG_InitMinimap();
 
 	CG_UpdateLoadingStep( LOAD_TRAILS );
@@ -1485,6 +1470,8 @@ void CG_Init( int serverMessageNum, int clientNum, const glconfig_t& gl, const G
 	CG_RegisterSounds();
 
 	// updates loading step by itself
+	// LOAD_GEOMETRY
+	// LOAD_ASSETS
 	CG_RegisterGraphics();
 
 	// load configs after initializing particles and trails since it registers some
@@ -1504,13 +1491,15 @@ void CG_Init( int serverMessageNum, int clientNum, const glconfig_t& gl, const G
 	CG_UpdateLoadingStep( LOAD_BUILDINGS );
 	CG_InitBuildables();
 
-	CG_UpdateLoadingStep( LOAD_REMAINING );
+	CG_UpdateLoadingStep( LOAD_VOICES );
 
 	cgs.voices = BG_VoiceInit();
 	BG_PrintVoices( cgs.voices, cg_debugVoices.integer );
 
+	CG_UpdateLoadingStep( LOAD_CLIENTS );
 	CG_RegisterClients(); // if low on memory, some clients will be deferred
 
+	CG_UpdateLoadingStep( LOAD_REMAINING );
 	CG_InitMarkPolys();
 
 	trap_S_EndRegistration();

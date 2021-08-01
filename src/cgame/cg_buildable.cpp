@@ -623,8 +623,6 @@ void CG_InitBuildables()
 		defaultHumanSounds[ j ] = trap_S_RegisterSound( filename, false );
 	}
 
-	cg.buildablesFraction = 0.0f;
-
 	for ( buildable = (buildable_t)( BA_NONE + 1 ); buildable < BA_NUM_BUILDABLES;
 	      buildable = (buildable_t)( buildable + 1 ) )
 	{
@@ -734,7 +732,7 @@ void CG_InitBuildables()
 			cg_buildables[ buildable ].buildableIcon = trap_R_RegisterShader( buildableIcon, (RegisterShaderFlags_t) ( RSF_NOMIP ) );
 		}
 
-		cg.buildablesFraction = ( float ) buildable / ( float )( BA_NUM_BUILDABLES - 1 );
+		cg.buildableLoadingFraction = ( float ) buildable / ( float )( BA_NUM_BUILDABLES - 1 );
 		trap_UpdateScreen();
 	}
 
