@@ -3437,7 +3437,7 @@ static void CG_Rocket_DrawProgressValue()
 	if ( *src )
 	{
 		float value = CG_Rocket_ProgressBarValue( src );
-		Rocket_SetInnerRML( va( "%d", (int) ( value * 100 ) ), 0 );
+		Rocket_SetInnerRML( va( "%d%%", (int) ( value * 100 ) ), 0 );
 	}
 }
 
