@@ -825,6 +825,10 @@ static void CG_UpdateLoadingStep( cgLoadingStep_t step )
 			CG_UpdateLoadingProgress( step, choose("Teleporting soldiers…", "Parenting dretches…", "Replicating alien DNA…", nullptr) );
 			break;
 
+		case LOAD_REMAINING:
+			CG_UpdateLoadingProgress( step, choose("Compiling GLSL shaders (please be patient)…", nullptr) );
+			break;
+
 		case LOAD_DONE:
 			CG_UpdateLoadingProgress( step, "Done!" );
 			cg.loading = false;
