@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "shared/parse.h"
 #ifdef BUILD_CGAME
 #include "cgame/cg_local.h"
@@ -328,7 +329,7 @@ static void Parse_CreatePunctuationTable( script_t *script, punctuation_t *punct
 	if ( !script->punctuationtable )
 	{
 		script->punctuationtable = ( punctuation_t ** )
-		                           BG_Alloc( 256 * sizeof( punctuation_t * ) );
+		                           BG_Malloc( 256 * sizeof( punctuation_t * ) );
 	}
 
 	memset( script->punctuationtable, 0, 256 * sizeof( punctuation_t * ) );
@@ -378,7 +379,7 @@ static void PRINTF_LIKE(2) Parse_ScriptError( const script_t *script, const char
 	if ( script->flags & SCFL_NOERRORS ) { return; }
 
 	va_start( ap, str );
-	vsprintf( text, str, ap );
+	Q_vsnprintf( text, sizeof( text ), str, ap );
 	va_end( ap );
 	Log::Notice( "file %s, line %d: %s\n", script->filename, script->line, text );
 }
@@ -396,7 +397,7 @@ static void PRINTF_LIKE(2) Parse_ScriptWarning( const script_t *script, const ch
 	if ( script->flags & SCFL_NOWARNINGS ) { return; }
 
 	va_start( ap, str );
-	vsprintf( text, str, ap );
+	Q_vsnprintf( text, sizeof( text ), str, ap );
 	va_end( ap );
 	Log::Notice( "file %s, line %d: %s\n", script->filename, script->line, text );
 }
@@ -1041,7 +1042,7 @@ static int Parse_ReadPrimitive( script_t *script, token_t *token )
 	token->string[ len ] = 0;
 
 	//copy the token into the script structure
-	memcpy( &script->token, token, sizeof( token_t ) );
+	script->token = *token;
 
 	//primitive reading successful
 	return 1;
@@ -1059,7 +1060,7 @@ static int Parse_ReadScriptToken( script_t *script, token_t *token )
 	//save line counter
 	script->lastline = script->line;
 	//clear the token stuff
-	memset( token, 0, sizeof( token_t ) );
+	*token = {};
 	//start of the white space
 	script->whitespace_p = script->script_p;
 	token->whitespace_p = script->script_p;
@@ -1111,7 +1112,7 @@ static int Parse_ReadScriptToken( script_t *script, token_t *token )
 	}
 
 	//copy the token into the script structure
-	memcpy( &script->token, token, sizeof( token_t ) );
+	script->token = *token;
 	//successfully read a token
 	return 1;
 }
@@ -1172,7 +1173,6 @@ static script_t *Parse_LoadScriptFile( const char *filename, int (*openFunc)(Str
 	memset( buffer, 0, sizeof( script_t ) + length + 1 );
 
 	script = ( script_t * ) buffer;
-	memset( script, 0, sizeof( script_t ) );
 	Q_strncpyz( script->filename, filename, sizeof( script->filename ) );
 	script->buffer = ( char * ) buffer + sizeof( script_t );
 	script->buffer[ length ] = 0;
@@ -1206,14 +1206,12 @@ static script_t *Parse_LoadScriptMemory( const char *ptr, int length, const char
 	void     *buffer;
 	script_t *script;
 
-	buffer = BG_Alloc( sizeof( script_t ) + length + 1 );
-	memset( buffer, 0, sizeof( script_t ) + length + 1 );
+	buffer = BG_Malloc( sizeof( script_t ) + length + 1 );
 
 	script = ( script_t * ) buffer;
-	memset( script, 0, sizeof( script_t ) );
+	*script = {};
 	Q_strncpyz( script->filename, name, sizeof( script->filename ) );
 	script->buffer = ( char * ) buffer + sizeof( script_t );
-	script->buffer[ length ] = 0;
 	script->length = length;
 	//pointer in script buffer
 	script->script_p = script->buffer;
@@ -1228,6 +1226,7 @@ static script_t *Parse_LoadScriptMemory( const char *ptr, int length, const char
 	Parse_SetScriptPunctuations( script, nullptr );
 	//
 	memcpy( script->buffer, ptr, length );
+	script->buffer[ length ] = '\0';
 	//
 	return script;
 }
@@ -1255,7 +1254,7 @@ static void PRINTF_LIKE(2) Parse_SourceError( const source_t *source, const char
 	va_list ap;
 
 	va_start( ap, str );
-	vsprintf( text, str, ap );
+	Q_vsnprintf( text, sizeof( text ), str, ap );
 	va_end( ap );
 	Log::Notice( "file %s, line %d: %s\n", source->scriptstack->filename, source->scriptstack->line, text );
 }
@@ -1271,7 +1270,7 @@ static void PRINTF_LIKE(2) Parse_SourceWarning( const source_t *source, const ch
 	va_list ap;
 
 	va_start( ap, str );
-	vsprintf( text, str, ap );
+	Q_vsnprintf( text, sizeof( text ), str, ap );
 	va_end( ap );
 	Log::Notice( "file %s, line %d: %s\n", source->scriptstack->filename, source->scriptstack->line, text );
 }
@@ -1352,17 +1351,12 @@ static token_t *Parse_CopyToken( const token_t *token )
 {
 	token_t *t;
 
-//  t = (token_t *) malloc(sizeof(token_t));
-	t = ( token_t * ) BG_Alloc( sizeof( token_t ) );
+	t = ( token_t * ) BG_Malloc( sizeof( token_t ) );
 
 //  t = freetokens;
-	if ( !t )
-	{
-		Sys::Error( "out of token space" );
-	}
 
 //  freetokens = freetokens->next;
-	memcpy( t, token, sizeof( token_t ) );
+	*t = *token;
 	t->next = nullptr;
 	numtokens++;
 	return t;
@@ -1439,7 +1433,7 @@ static int Parse_ReadSourceToken( source_t *source, token_t *token )
 	}
 
 	//copy the already available token
-	memcpy( token, source->tokens, sizeof( token_t ) );
+	*token = *source->tokens;
 	//free the read token
 	t = source->tokens;
 	source->tokens = source->tokens->next;
@@ -3141,7 +3135,7 @@ static int Parse_Directive_eval( source_t *source )
 	token.whitespace_p = source->scriptstack->script_p;
 	token.endwhitespace_p = source->scriptstack->script_p;
 	token.linescrossed = 0;
-	sprintf( token.string, "%ld", std::abs( value ) );
+	Com_sprintf( token.string, sizeof( token.string ), "%ld", std::abs( value ) );
 	token.type = tokenType_t::TT_NUMBER;
 	token.subtype = TT_INTEGER | TT_LONG | TT_DECIMAL;
 	Parse_UnreadSourceToken( source, &token );
@@ -3167,7 +3161,7 @@ static int Parse_Directive_evalfloat( source_t *source )
 	token.whitespace_p = source->scriptstack->script_p;
 	token.endwhitespace_p = source->scriptstack->script_p;
 	token.linescrossed = 0;
-	sprintf( token.string, "%1.2f", fabs( value ) );
+	Com_sprintf( token.string, sizeof( token.string ), "%1.2f", fabs( value ) );
 	token.type = tokenType_t::TT_NUMBER;
 	token.subtype = TT_FLOAT | TT_LONG | TT_DECIMAL;
 	Parse_UnreadSourceToken( source, &token );
@@ -3194,7 +3188,7 @@ static int Parse_DollarDirective_evalint( source_t *source )
 	token.whitespace_p = source->scriptstack->script_p;
 	token.endwhitespace_p = source->scriptstack->script_p;
 	token.linescrossed = 0;
-	sprintf( token.string, "%ld", std::abs( value ) );
+	Com_sprintf( token.string, sizeof( token.string ), "%ld", std::abs( value ) );
 	token.type = tokenType_t::TT_NUMBER;
 	token.subtype = TT_INTEGER | TT_LONG | TT_DECIMAL;
 	token.intvalue = value;
@@ -3222,7 +3216,7 @@ static int Parse_DollarDirective_evalfloat( source_t *source )
 	token.whitespace_p = source->scriptstack->script_p;
 	token.endwhitespace_p = source->scriptstack->script_p;
 	token.linescrossed = 0;
-	sprintf( token.string, "%1.2f", fabs( value ) );
+	Com_sprintf( token.string, sizeof( token.string ), "%1.2f", fabs( value ) );
 	token.type = tokenType_t::TT_NUMBER;
 	token.subtype = TT_FLOAT | TT_LONG | TT_DECIMAL;
 	token.intvalue = ( unsigned long ) value;
@@ -3873,7 +3867,7 @@ static bool Parse_ReadToken( source_t *source, token_t *token )
 		}
 
 		//copy token for unreading
-		memcpy( &source->token, token, sizeof( token_t ) );
+		source->token = *token;
 		//found a token
 		return true;
 	}
@@ -3887,19 +3881,17 @@ Parse_DefineFromString
 static define_t *Parse_DefineFromString( const char *string )
 {
 	script_t *script;
-	source_t src;
 	token_t  *t;
 	int      res, i;
 	define_t *def;
 
 	script = Parse_LoadScriptMemory( string, strlen( string ), "*extern" );
 	//create a new source
-	memset( &src, 0, sizeof( source_t ) );
+	source_t src{};
 	Q_strncpyz( src.filename, "*extern", MAX_QPATH );
 	//src.openFunc is null, as a define can't contain an include
 	src.scriptstack = script;
-	src.definehash = (define_t**) BG_Alloc( DEFINEHASHSIZE * sizeof( define_t * ) );
-	memset( src.definehash, 0, DEFINEHASHSIZE * sizeof( define_t * ) );
+	src.definehash = (define_t**) BG_Calloc( DEFINEHASHSIZE * sizeof( define_t * ) );
 	//create a define from the source
 	res = Parse_Directive_define( &src );
 
@@ -4099,8 +4091,7 @@ static source_t *Parse_LoadSourceFile( const char *filename, int (*openFunc)(Str
 
 	script->next = nullptr;
 
-	source = ( source_t * ) BG_Alloc( sizeof( source_t ) );
-	memset( source, 0, sizeof( source_t ) );
+	source = ( source_t * ) BG_Calloc( sizeof( source_t ) );
 
 	Q_strncpyz( source->filename, filename, MAX_QPATH );
 	source->openFunc = openFunc;
@@ -4110,8 +4101,7 @@ static source_t *Parse_LoadSourceFile( const char *filename, int (*openFunc)(Str
 	source->indentstack = nullptr;
 	source->skip = 0;
 
-	source->definehash = (define_t**) BG_Alloc( DEFINEHASHSIZE * sizeof( define_t * ) );
-	memset( source->definehash, 0, DEFINEHASHSIZE * sizeof( define_t * ) );
+	source->definehash = (define_t**) BG_Calloc( DEFINEHASHSIZE * sizeof( define_t * ) );
 	Parse_AddGlobalDefinesToSource( source );
 	return source;
 }
@@ -4308,10 +4298,8 @@ see the header file for the documentation
 ===============
 */
 
-static constexpr char csv_delimiters[] = ", ";
-
-Parse_WordListSplitter::Parse_WordListSplitter(std::string str)
-	: _string(std::move(str)), _stop(0)
+Parse_WordListSplitter::Parse_WordListSplitter(std::string str, const char* delims)
+	: _string(std::move(str)), _stop(0), _delims(delims)
 {
 	++*this;
 }
@@ -4326,8 +4314,8 @@ const char * Parse_WordListSplitter::operator*() const
 
 Parse_WordListSplitter& Parse_WordListSplitter::operator++()
 {
-	_start = _string.find_first_not_of(csv_delimiters, _stop);
-	_stop  = _string.find_first_of(csv_delimiters, _start);
+	_start = _string.find_first_not_of(_delims, _stop);
+	_stop  = _string.find_first_of(_delims, _start);
 	if (_stop != _string.npos) {
 		_string[_stop] = '\0';
 		++_stop;

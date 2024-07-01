@@ -34,6 +34,7 @@ Maryland 20850 USA.
 
 // sg_cm_world.c -- world query functions
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "sg_cm_world.h"
 
@@ -795,7 +796,6 @@ void G_CM_Trace( trace_t *results, const vec3_t start, const vec3_t mins2, const
                  const vec3_t end, int passEntityNum, int contentmask, int skipmask,
                  traceType_t type )
 {
-	moveclip_t clip;
 	int        i;
 
 	if ( !mins2 )
@@ -812,7 +812,7 @@ void G_CM_Trace( trace_t *results, const vec3_t start, const vec3_t mins2, const
 	VectorCopy(mins2, mins);
 	VectorCopy(maxs2, maxs);
 
-	memset( &clip, 0, sizeof( moveclip_t ) );
+	moveclip_t clip{};
 
 	// clip to world
 	// -------------

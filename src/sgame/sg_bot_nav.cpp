@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_bot_util.h"
 #include "botlib/bot_types.h"
 #include "botlib/bot_api.h"
@@ -309,7 +310,7 @@ bool GoalInRange( const gentity_t *self, float r )
 		// to still count standing over a turret on the
 		// target point or sitting next to a buildable
 		// counts as a "we have reached our destination".
-		glm::vec3 deltaPos = VEC2GLM( self->s.origin ) - self->botMind->nav().glm_tpos();
+		glm::vec3 deltaPos = VEC2GLM( self->s.origin ) - self->botMind->nav().tpos;
 		return Length2D( deltaPos ) < r
 				&& fabsf( deltaPos.z ) <= 90;
 	}
@@ -664,7 +665,7 @@ static bool BotFindSteerTarget( gentity_t *self, glm::vec3 &dir )
 	playerMaxs[2] += STEPSIZE;
 
 	//get the yaw (left/right) we dont care about up/down
-	vectoangles( &dir[0], &angles[0] );
+	vectoangles( GLM4READ( dir ), GLM4RW( angles ) );
 	yaw1 = yaw2 = angles[ YAW ];
 
 	//directly infront of us is blocked, so dont test it
@@ -726,7 +727,7 @@ static bool BotFindSteerTarget( gentity_t *self, glm::vec3 &dir )
 // Returns true on error
 static bool BotAvoidObstacles( gentity_t *self, glm::vec3 &dir, bool ignoreGeometry, obstacle_t &obst )
 {
-	dir = self->botMind->nav().glm_dir();
+	dir = self->botMind->nav().dir;
 	gentity_t const *blocker = BotGetPathBlocker( self, dir );
 
 	if ( !blocker )
@@ -871,8 +872,6 @@ static int WallclimbStopTime( gentity_t *self )
 // check if a wall climbing bot is running into an attackable human entity, if so: attack it
 static void BotMaybeAttackWhileClimbing( gentity_t *self )
 {
-	ASSERT( self->botMind->lastNavconDistance > 0 );
-
 	int ownClass = self->client->ps.stats[ STAT_CLASS ];
 	glm::vec3 playerMins, playerMaxs;
 	BG_BoundingBox( static_cast<class_t>( ownClass ), &playerMins, &playerMaxs, nullptr, nullptr, nullptr );
@@ -897,7 +896,7 @@ static void BotMaybeAttackWhileClimbing( gentity_t *self )
 			// upper bound for extensions, in case a bot loops on a wall:
 			int extendedDistance = std::max( self->botMind->lastNavconDistance + distanceExtension, 4000 );
 
-			if ( ownClass == PCL_ALIEN_LEVEL0 && G_DretchCanDamageEntity( self, hit ) )
+			if ( ownClass == PCL_ALIEN_LEVEL0 && G_DretchCanDamageEntity( hit ) )
 			{
 				self->botMind->lastNavconDistance = extendedDistance;
 			}
@@ -916,7 +915,7 @@ static void BotMaybeAttackWhileClimbing( gentity_t *self )
 static void BotClimbToGoal( gentity_t *self )
 {
 	glm::vec3 ownPos = VEC2GLM( self->s.origin );
-	glm::vec3 dir = self->botMind->nav().glm_dir();
+	glm::vec3 dir = self->botMind->nav().dir;
 	BotAimAtLocation( self, ownPos + 100.f * dir );
 	self->botMind->cmdBuffer.upmove = -127;
 	self->botMind->cmdBuffer.forwardmove = 127;
@@ -990,7 +989,7 @@ static bool BotTryMoveUpward( gentity_t *self )
 
 	if ( !hasNextCorner )
 	{
-		nextCorner = self->botMind->nav().glm_tpos();
+		nextCorner = self->botMind->nav().tpos;
 	}
 
 	// if not trying to move upward
@@ -1181,7 +1180,7 @@ bool BotMoveToGoal( gentity_t *self )
 		usercmd_t &botCmdBuffer = self->botMind->cmdBuffer;
 		if ( magnitude )
 		{
-			glm::vec3 target = self->botMind->nav().glm_tpos();
+			glm::vec3 target = self->botMind->nav().tpos;
 			botCmdBuffer.angles[PITCH] = ANGLE2SHORT( -CalcAimPitch( self, target, magnitude ) / 3 );
 		}
 		BotFireWeapon( wpm, &botCmdBuffer );

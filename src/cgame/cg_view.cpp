@@ -27,6 +27,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cg_view.c -- setup all the parameters (position, angle, etc)
 // for a 3D rendering
 
+#include "common/Common.h"
+#include "common/cm/cm_public.h"
 #include "cg_local.h"
 
 /*
@@ -1629,7 +1631,7 @@ static int CG_CalcViewValues()
 {
 	playerState_t *ps;
 
-	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
+	cg.refdef = {};
 
 	// calculate size of 3D view
 	CG_CalcVrect();

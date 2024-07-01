@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 
 void G_namelog_cleanup()
@@ -99,7 +100,7 @@ void G_namelog_connect( gclient_t *client )
 		i--;
 	}
 
-	memcpy( &n->ip[ i ], &client->pers.ip, sizeof( n->ip[ i ] ) );
+	n->ip[ i ] = client->pers.ip;
 }
 
 void G_namelog_disconnect( gclient_t *client )

@@ -63,9 +63,9 @@ struct RasterizationContext
 		triareas( 0 ),
 		lset( 0 ),
 		chf( 0 ),
-		ntiles( 0 ){
-		memset( tiles, 0, sizeof( TileCacheData ) * MAX_LAYERS );
-	}
+		tiles{},
+		ntiles( 0 )
+	{}
 
 	~RasterizationContext(){
 		rcFreeHeightField( solid );
@@ -95,7 +95,7 @@ Geometry() : verts( 0 ), nverts( 0 ) {}
 
 void init( const float *v, int nv, const int *tris, int ntris ){
 	verts = new float[ nv * 3 ];
-	memcpy( verts, v, sizeof( float ) * nv * 3 );
+	std::copy_n( v, nv * 3, verts );
 
 	nverts = nv;
 
@@ -201,7 +201,7 @@ public:
 private:
 	std::vector<std::thread> threads_;
 	int numActiveThreads_;
-	std::atomic<bool> canceled_;
+	std::atomic<bool> canceled_{false};
 	std::vector<std::unique_ptr<NavgenTask>> finishedTasks_;
 
 	// guards taskQueue_, finishedTasks_, numActiveThreads_ during multithreading

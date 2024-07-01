@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // For commands which can only be performed by the server console, see sg_svcmds.cpp.
 // For administrator commands (requiring authentication), see sg_admin.cpp.
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "engine/qcommon/q_unicode.h"
 #include "botlib/bot_api.h"
@@ -543,8 +544,6 @@ Change team and spawn as builder at the current position
 */
 static void Cmd_Devteam_f( gentity_t *ent )
 {
-	gentity_t *spawn;
-
 	if ( trap_Argc() < 2 )
 	{
 		ADMP( "\"" N_("usage: devteam [a|h]") "\"" );
@@ -575,16 +574,14 @@ static void Cmd_Devteam_f( gentity_t *ent )
 	ent->client->pers.teamInfo = level.startTime - 1;
 	ent->client->sess.spectatorState = SPECTATOR_NOT;
 
-	spawn = G_NewEntity( NO_CBSE );
-	VectorCopy( ent->s.pos.trBase, spawn->s.pos.trBase );
-	VectorCopy( ent->s.angles, spawn->s.angles );
-	VectorCopy( ent->s.origin, spawn->s.origin );
-	VectorCopy( ent->s.angles2, spawn->s.angles2 );
+	glm::vec3 origin = VEC2GLM( ent->s.origin );
+	glm::vec3 angles = VEC2GLM( ent->client->ps.viewangles );
+	angles[ YAW ] -= 180.0f; // ClientSpawn randomly adds 180
+	ClientSpawn( ent, &g_entities[ ENTITYNUM_WORLD ], GLM4READ( origin ), GLM4READ( angles ) );
 
+	// bookkeeping stuff from G_ChangeTeam
 	G_UpdateTeamConfigStrings();
 	ClientUserinfoChanged( ent->client->ps.clientNum, false );
-	ClientSpawn( ent, spawn, ent->s.origin, ent->s.angles );
-	G_FreeEntity( spawn );
 }
 
 /*
@@ -1661,7 +1658,7 @@ static void Cmd_SetViewpos_f( gentity_t *ent )
 
 		if (entityId >= level.num_entities || entityId < MAX_CLIENTS)
 		{
-			Log::Warn("entityId %d is out of range", entityId);
+			Log::Warn("entityNum %d is out of range", entityId);
 			return;
 		}
 		selection = &g_entities[entityId];
@@ -1697,7 +1694,7 @@ static void Cmd_SetViewpos_f( gentity_t *ent )
 		}
 	}
 
-	G_TeleportPlayer( ent, origin, angles, 0.0f );
+	G_TeleportPlayer( ent, VEC2GLM( origin ), VEC2GLM( angles ), 0.0f );
 }
 
 static bool FindRoomForClassChangeVertically(
@@ -1754,7 +1751,7 @@ static bool FindRoomForClassChangeVertically(
 	temp[ 2 ] += nudgeHeight;
 	trap_Trace( &tr, newOrigin, toMins, toMaxs, temp, ent->num(), MASK_PLAYERSOLID, 0 );
 
-	if ( tr.fraction == 0.0f )
+	if ( tr.allsolid )
 	{
 		// it's not helping, we are probably too close to something horizontally
 		return false;
@@ -1786,7 +1783,7 @@ static bool FindRoomForClassChangeLaterally(
 	// each 4 directions, but this is close enough.
 	// This is correct assuming the bbox is centered on the
 	// origin on x and y.
-	float distance = std::min(max_x, max_y);
+	float distance = std::min(max_x, max_y) + 0.5f;
 
 	vec3_t origin;
 	origin[0] = ent->client->ps.origin[0];
@@ -1805,7 +1802,7 @@ static bool FindRoomForClassChangeLaterally(
 		trap_Trace( &trace, start_point, toMins, toMaxs,
 				origin, ent->num(),
 				MASK_PLAYERSOLID, 0 );
-		if ( trace.fraction == 0.0f )
+		if ( trace.allsolid )
 		{
 			continue;
 		}
@@ -1950,7 +1947,7 @@ bool G_AlienEvolve( gentity_t *ent, class_t newClass, bool report, bool dryRun )
 	glm::vec3 mins = VEC2GLM( ent->client->ps.origin ) - range;
 
 	int entityList[ MAX_GENTITIES ];
-	int num = trap_EntitiesInBox( &mins[0], &maxs[0], entityList, MAX_GENTITIES );
+	int num = trap_EntitiesInBox( GLM4READ( mins ), GLM4READ( maxs ), entityList, MAX_GENTITIES );
 
 	int alienBuildingsInRange = 0;
 	int humansInRange = 0;
@@ -3266,7 +3263,7 @@ void Cmd_TeamStatus_f( gentity_t * ent )
 	char maxMinersStr[16] = "";
 	if ( g_maxMiners.Get() > -1 )
 	{
-		sprintf( maxMinersStr, "^3/^5%d", g_maxMiners.Get() );
+		Com_sprintf( maxMinersStr, sizeof( maxMinersStr ), "^3/^5%d", g_maxMiners.Get() );
 	}
 
 	if ( G_Team( ent ) == TEAM_ALIENS )
@@ -3372,7 +3369,7 @@ void G_StopFollowing( gentity_t *ent )
 		BG_GetClientViewOrigin( &ent->client->ps, viewOrigin );
 		VectorCopy( ent->client->ps.viewangles, angles );
 		angles[ ROLL ] = 0;
-		G_TeleportPlayer( ent, viewOrigin, angles, false );
+		G_TeleportPlayer( ent, VEC2GLM( viewOrigin ), VEC2GLM( angles ), false );
 	}
 
 	CalculateRanks();
@@ -4142,10 +4139,12 @@ static void Cmd_Beacon_f( gentity_t *ent )
 	if( G_FloodLimited( ent ) )
 		return;
 
-	if ( !( flags & BCF_PRECISE ) )
-		Beacon::MoveTowardsRoom( tr.endpos );
+	glm::vec3 position = VEC2GLM( tr.endpos );
 
-	Beacon::Propagate( Beacon::New( tr.endpos, type, 0, team, ent->num(), BCH_REMOVE ) );
+	if ( !( flags & BCF_PRECISE ) )
+		position = Beacon::MoveTowardsRoom( position );
+
+	Beacon::Propagate( Beacon::New( position, type, 0, team, ent->num(), BCH_REMOVE));
 	return;
 }
 

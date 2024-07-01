@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // cg_marks.c -- wall marks
 
+#include "common/Common.h"
 #include "cg_local.h"
 
 /*
@@ -112,7 +113,7 @@ static markPoly_t *CG_AllocMark()
 	le = cg_freeMarkPolys;
 	cg_freeMarkPolys = cg_freeMarkPolys->nextMark;
 
-	memset( le, 0, sizeof( *le ) );
+	*le = {};
 
 	// link into the active list
 	le->nextMark = cg_activeMarkPolys.nextMark;
@@ -242,7 +243,7 @@ void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 		mark->color[ 1 ] = green;
 		mark->color[ 2 ] = blue;
 		mark->color[ 3 ] = alpha;
-		memcpy( mark->verts, verts, mf->numPoints * sizeof( verts[ 0 ] ) );
+		std::copy_n( verts, mf->numPoints, mark->verts );
 		markTotal++;
 	}
 }

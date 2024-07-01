@@ -32,6 +32,7 @@ Maryland 20850 USA.
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "sg_spawn.h"
 #include "CBSE.h"
@@ -43,8 +44,8 @@ static void InitEnvAFXEntity( gentity_t *self, bool link )
 		glm::vec3 angles = VEC2GLM( self->s.angles );
 		glm::vec3 movedir = VEC2GLM( self->mapEntity.movedir );
 		G_SetMovedir( angles, movedir );
-		VectorCopy( &angles[0], self->s.angles );
-		VectorCopy( &movedir[0], self->mapEntity.movedir );
+		VectorCopy( angles, self->s.angles );
+		VectorCopy( movedir, self->mapEntity.movedir );
 	}
 
 	trap_SetBrushModel( self, self->mapEntity.model );
@@ -77,7 +78,7 @@ trigger_push
 ==============================================================================
 */
 
-static void env_afx_push_touch( gentity_t *self, gentity_t *activator, trace_t* )
+static void env_afx_push_touch( gentity_t *self, gentity_t *activator )
 {
 	//only triggered by clients
 	if ( !activator || !activator->client )
@@ -123,7 +124,7 @@ trigger_teleport
 ==============================================================================
 */
 
-static void env_afx_teleporter_touch( gentity_t *self, gentity_t *other, trace_t* )
+static void env_afx_teleporter_touch( gentity_t *self, gentity_t *other )
 {
 	gentity_t *dest;
 
@@ -154,7 +155,7 @@ static void env_afx_teleporter_touch( gentity_t *self, gentity_t *other, trace_t
 	if ( !dest )
 		return;
 
-	G_TeleportPlayer( other, dest->s.origin, dest->s.angles, self->mapEntity.config.speed );
+	G_TeleportPlayer( other, VEC2GLM( dest->s.origin ), VEC2GLM( dest->s.angles ), self->mapEntity.config.speed );
 }
 
 static void env_afx_teleporter_act( gentity_t *ent, gentity_t*, gentity_t* )
@@ -199,7 +200,7 @@ trigger_hurt
 ==============================================================================
 */
 
-static void env_afx_hurt_touch( gentity_t *self, gentity_t *other, trace_t* )
+static void env_afx_hurt_touch( gentity_t *self, gentity_t *other )
 {
 	int dflags;
 
@@ -262,7 +263,7 @@ static void env_afx_gravity_reset( gentity_t *self )
 	G_ResetIntField(&self->mapEntity.amount, false, self->mapEntity.config.amount, self->mapEntity.eclass->config.amount, g_gravity.Get());
 }
 
-static void env_afx_gravity_touch( gentity_t *ent, gentity_t *other, trace_t* )
+static void env_afx_gravity_touch( gentity_t *ent, gentity_t *other )
 {
 	//only triggered by clients
 	if ( !other->client )
@@ -311,7 +312,7 @@ trigger_heal
 =================================================================================
 */
 
-static void env_afx_heal_touch( gentity_t *self, gentity_t *other, trace_t* )
+static void env_afx_heal_touch( gentity_t *self, gentity_t *other )
 {
 	if ( !other->client )
 	{
@@ -363,7 +364,7 @@ trigger_ammo
 
 =================================================================================
 */
-static void env_afx_ammo_touch( gentity_t *self, gentity_t *other, trace_t* )
+static void env_afx_ammo_touch( gentity_t *self, gentity_t *other )
 {
 	int      maxClips, maxAmmo;
 	weapon_t weapon;

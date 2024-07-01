@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "sg_cm_world.h"
 #include "botlib/bot_api.h"
@@ -88,7 +89,7 @@ void VM::VMHandleSyscall(uint32_t id, Util::Reader reader) {
 
 		case GAME_CLIENT_CONNECT:
 			IPC::HandleMsg<GameClientConnectMsg>(VM::rootChannel, std::move(reader), [](int clientNum, bool firstTime, int isBot, bool& denied, std::string& reason) {
-				const char* deniedStr = isBot ? ClientBotConnect(clientNum, firstTime, TEAM_NONE) : ClientConnect(clientNum, firstTime);
+				const char* deniedStr = isBot ? ClientBotConnect(clientNum, firstTime) : ClientConnect(clientNum, firstTime);
 				denied = deniedStr != nullptr;
 				if (denied)
 					reason = deniedStr;
@@ -194,7 +195,8 @@ void trap_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const 
 void trap_Trace( trace_t *results, const glm::vec3& start, const glm::vec3& mins, const glm::vec3& maxs,
                  const glm::vec3& end, int passEntityNum, int contentmask , int skipmask)
 {
-	trap_Trace( results, &start[0], &mins[0], &maxs[0], &end[0], passEntityNum, contentmask, skipmask );
+	trap_Trace( results, GLM4READ( start ), GLM4READ( mins ), GLM4READ( maxs ), GLM4READ( end ),
+		passEntityNum, contentmask, skipmask );
 }
 
 int trap_PointContents(const vec3_t point, int passEntityNum)

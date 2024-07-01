@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // cg_trails.c -- the trail system
 
+#include "common/Common.h"
 #include "common/FileSystem.h"
 #include "cg_local.h"
 
@@ -1097,7 +1098,7 @@ CG_InitialiseBaseTrailBeam
 */
 static void CG_InitialiseBaseTrailBeam( baseTrailBeam_t *btb )
 {
-	memset( btb, 0, sizeof( baseTrailBeam_t ) );
+	*btb = {};
 
 	btb->numSegments = 1;
 	btb->frontWidth = btb->backWidth = 1.0f;
@@ -1313,13 +1314,13 @@ void CG_LoadTrailSystems()
 	for ( i = 0; i < MAX_BASETRAIL_SYSTEMS; i++ )
 	{
 		baseTrailSystem_t *bts = &baseTrailSystems[ i ];
-		memset( bts, 0, sizeof( baseTrailSystem_t ) );
+		*bts = {};
 	}
 
 	for ( i = 0; i < MAX_BASETRAIL_BEAMS; i++ )
 	{
 		baseTrailBeam_t *btb = &baseTrailBeams[ i ];
-		memset( btb, 0, sizeof( baseTrailBeam_t ) );
+		*btb = {};
 	}
 
 	//and bring in the new
@@ -1403,7 +1404,7 @@ static trailBeam_t *CG_SpawnNewTrailBeam( baseTrailBeam_t *btb,
 
 		if ( !tb->valid )
 		{
-			memset( tb, 0, sizeof( trailBeam_t ) );
+			*tb = {};
 
 			//found a free slot
 			tb->class_ = btb;

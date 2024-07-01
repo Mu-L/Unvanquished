@@ -32,10 +32,11 @@ Maryland 20850 USA.
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "sg_spawn.h"
 
-void SP_pos_player_spawn( gentity_t *self )
+void SP_pos_player_spawn( gentity_t * )
 {
 }
 
@@ -66,19 +67,19 @@ void SP_pos_location( gentity_t *self )
 	self->r.svFlags = SVF_BROADCAST;
 	trap_LinkEntity( self );  // make the server send them to the clients
 
-	if ( G_SpawnInt( "count", "", &self->customNumber) )
+	if ( G_SpawnInt( "count", "", &self->mapEntity.customNumber) )
 	{
-		if ( self->customNumber < 0 )
+		if ( self->mapEntity.customNumber < 0 )
 		{
-			self->customNumber = 0;
+			self->mapEntity.customNumber = 0;
 		}
 
-		if ( self->customNumber > 7 )
+		if ( self->mapEntity.customNumber > 7 )
 		{
-			self->customNumber = 7;
+			self->mapEntity.customNumber = 7;
 		}
 
-		message = va( "%c%c%s^*", Color::Constants::ESCAPE, self->customNumber + '0',
+		message = va( "%c%c%s^*", Color::Constants::ESCAPE, self->mapEntity.customNumber + '0',
 		              self->mapEntity.message );
 	}
 	else

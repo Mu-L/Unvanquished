@@ -32,7 +32,9 @@ Maryland 20850 USA.
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "common/FileSystem.h"
+#include "common/cm/cm_public.h"
 #include "cg_local.h"
 #include "cg_key_name.h"
 #include "rocket/rocket.h"
@@ -228,7 +230,7 @@ class TranslateNodeHandler : public Rml::XMLNodeHandler
 		return true;
 	}
 
-	bool ElementEnd(Rml::XMLParser*, const Rml::String& data) override { return true; }
+	bool ElementEnd(Rml::XMLParser*, const Rml::String&) override { return true; }
 };
 
 class HudElement : public Rml::Element

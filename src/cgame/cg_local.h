@@ -34,7 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "common/KeyIdentification.h"
 #include "engine/qcommon/q_shared.h"
 #include "engine/renderer/tr_types.h"
-#include "engine/client/cg_api.h"
+#include "shared/client/cg_api.h"
 #include "shared/bg_public.h"
 #include "engine/client/keycodes.h"
 #include "cg_ui.h"
@@ -1344,7 +1344,6 @@ struct rocketMenu_t
 };
 
 #define MAX_SERVERS 2048
-#define MAX_RESOLUTIONS 32
 #define MAX_LANGUAGES 64
 #define MAX_OUTPUTS 16
 #define MAX_MODS 64
@@ -1364,6 +1363,9 @@ struct server_t
 
 
 
+// 2 positive numbers is a resolution from the r_availableModes list
+// 2 negative numbers - their absolute values are a resolution not in that list
+// 0, 0 - the size of the display via r_mode -2
 struct resolution_t
 {
 	int width;
@@ -1407,8 +1409,7 @@ struct rocketDataSource_t
 	bool buildingServerInfo;
 	bool retrievingServers;
 
-	resolution_t resolutions[ MAX_RESOLUTIONS ];
-	int resolutionCount;
+	std::vector<resolution_t> resolutions;
 	int resolutionIndex;
 
 	language_t languages[ MAX_LANGUAGES ];
@@ -1810,6 +1811,7 @@ extern Cvar::Range<Cvar::Cvar<int>> cg_drawCrosshairNames;
 extern Cvar::Cvar<bool> cg_drawBuildableHealth;
 extern Cvar::Cvar<bool> cg_drawMinimap;
 extern Cvar::Cvar<int> cg_minimapActive;
+extern Cvar::Cvar<bool> cg_minimapRotate;
 extern Cvar::Cvar<float> cg_crosshairSize;
 extern Cvar::Range<Cvar::Cvar<int>> cg_teamOverlayUserinfo;
 extern Cvar::Cvar<bool> cg_draw2D;
@@ -1971,7 +1973,7 @@ void     CG_TileClear();
 void     CG_DrawRect( float x, float y, float width, float height, float size, const Color::Color& color );
 void     CG_DrawSides( float x, float y, float w, float h, float size );
 void     CG_DrawTopBottom( float x, float y, float w, float h, float size );
-bool CG_WorldToScreen( vec3_t point, float *x, float *y );
+bool CG_WorldToScreen( const vec3_t point, float *x, float *y );
 char     CG_GetColorCharForHealth( int clientnum );
 void     CG_DrawSphere( const vec3_t center, float radius, int customShader, const Color::Color& shaderRGBA );
 void     CG_DrawSphericalCone( const vec3_t tip, const vec3_t rotation, float radius,
@@ -1993,6 +1995,8 @@ void CG_DrawActive();
 void       CG_RunMenuScript( char **args );
 void       CG_ResetPainBlend();
 void       CG_DrawField( float x, float y, int width, float cw, float ch, int value );
+bool CG_ClampToRectangleAlongLine(
+	const glm::vec2 &mins, const glm::vec2 &maxs, const glm::vec2 &center, bool allowInterior, glm::vec2 &point );
 
 //
 // cg_players.c

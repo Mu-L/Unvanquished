@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "engine/qcommon/q_unicode.h"
 #include "Entities.h"
@@ -1086,14 +1087,14 @@ const char *ClientConnect( int clientNum, bool firstTime )
 	}
 
 	ent->client = client;
-	memset( client, 0, sizeof( *client ) );
+	ResetStruct( *client );
 
 	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
 	value = Info_ValueForKey( userinfo, "ip" );
 
 	// check for local client
-	if ( !strcmp( value, "localhost" ) )
+	if ( !strcmp( value, "localhost" ) || !strcmp( value, "loopback" ) )
 	{
 		client->pers.localClient = true;
 	}
@@ -1169,7 +1170,7 @@ const char *ClientConnect( int clientNum, bool firstTime )
 	// read or initialize the session data
 	if ( firstTime )
 	{
-		G_InitSessionData( client, userinfo );
+		G_InitSessionData( client );
 	}
 
 	G_ReadSessionData( client );
@@ -1197,15 +1198,15 @@ const char *ClientConnect( int clientNum, bool firstTime )
 		                                Quote( client->pers.netname ) ) );
 	}
 
-	// count current clients and rank for scoreboard
-	CalculateRanks();
-
 	// if this is after !restart keepteams or !restart switchteams, apply said selection
 	if ( client->sess.restartTeam != TEAM_NONE )
 	{
 		G_ChangeTeam( ent, client->sess.restartTeam );
 		client->sess.restartTeam = TEAM_NONE;
 	}
+
+	// count current clients and rank for scoreboard
+	CalculateRanks();
 
 	return nullptr;
 }
@@ -1218,20 +1219,23 @@ Cut-down version of ClientConnect.
 Doesn't do things not relevant to bots (which are local GUIDless clients).
 ============
 */
-const char *ClientBotConnect( int clientNum, bool firstTime, team_t team )
+const char *ClientBotConnect( int clientNum, bool firstTime )
 {
+	if ( !firstTime )
+	{
+		Log::Warn( "Bot clients are not expected to carry over after restarts!" );
+		return "bot can't persist over sgame restart";
+	}
+
 	const char      *userInfoError;
 	gclient_t       *client;
-	char            userinfo[ MAX_INFO_STRING ];
 	gentity_t       *ent;
 
 	ent = &g_entities[ clientNum ];
 	client = &level.clients[ clientNum ];
 
 	ent->client = client;
-	memset( client, 0, sizeof( *client ) );
-
-	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
+	ResetStruct( *client );
 
 	client->pers.localClient = true;
 	G_AddressParse( "localhost", &client->pers.ip );
@@ -1240,14 +1244,6 @@ const char *ClientBotConnect( int clientNum, bool firstTime, team_t team )
 	client->pers.admin = nullptr;
 	client->pers.pubkey_authenticated = true;
 	client->pers.connected = CON_CONNECTING;
-
-	// read or initialize the session data
-	if ( firstTime )
-	{
-		G_InitSessionData( client, userinfo );
-	}
-
-	G_ReadSessionData( client );
 
 	// get and distribute relevant parameters
 	G_namelog_connect( client );
@@ -1259,12 +1255,6 @@ const char *ClientBotConnect( int clientNum, bool firstTime, team_t team )
 	}
 
 	ent->r.svFlags |= SVF_BOT;
-
-	// can happen during reconnection
-	if ( !ent->botMind )
-	{
-		G_BotSetDefaults( clientNum, team, client->sess.botSkill, client->sess.botTree );
-	}
 
 	G_LogPrintf( "ClientConnect: %i [%s] (%s) \"%s^*\" \"%s^*\" [BOT]",
 	             clientNum, client->pers.ip.str[0] ? client->pers.ip.str : "127.0.0.1", client->pers.guid,
@@ -1333,8 +1323,8 @@ void ClientBegin( int clientNum )
 	// so the viewpoint doesn't interpolate through the
 	// world to the new position
 	flags = client->ps.eFlags;
-	memset( &client->ps, 0, sizeof( client->ps ) );
-	memset( &client->pmext, 0, sizeof( client->pmext ) );
+	client->ps = {};
+	client->pmext = {};
 	client->ps.eFlags = flags;
 
 	// locate ent at a spawn point
@@ -1447,19 +1437,10 @@ static void ClientSpawnCBSE(gentity_t *ent, bool evolving) {
 			break;
 
 		case PCL_HUMAN_NAKED:
-			ClientEntityCreate<NakedHumanEntity>( ent, oldEntity, client, pcl, evolving );
-			break;
-
 		case PCL_HUMAN_LIGHT:
-			ClientEntityCreate<LightHumanEntity>( ent, oldEntity, client, pcl, evolving );
-			break;
-
 		case PCL_HUMAN_MEDIUM:
-			ClientEntityCreate<MediumHumanEntity>( ent, oldEntity, client, pcl, evolving );
-			break;
-
 		case PCL_HUMAN_BSUIT:
-			ClientEntityCreate<HeavyHumanEntity>( ent, oldEntity, client, pcl, evolving );
+			ClientEntityCreate<HumanEntity>( ent, oldEntity, client, pcl, evolving );
 			break;
 
 		default:
@@ -1481,14 +1462,11 @@ Initializes all non-persistent parts of playerState
 void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const vec3_t angles )
 {
 	int                index;
-	vec3_t             spawn_origin, spawn_angles;
-	gclient_t          *client;
 	int                i;
 	clientPersistant_t saved;
 	clientSession_t    savedSess;
-	bool           savedNoclip, savedCliprcontents;
+	bool savedNoclip;
 	int                persistant[ MAX_PERSISTANT ];
-	gentity_t          *spawnPoint = nullptr;
 	int                flags;
 	int                savedPing;
 	int                teamLocal;
@@ -1500,6 +1478,8 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 
 	bool evolving = ent == spawn;
 	ClientSpawnCBSE(ent, evolving);
+
+	gclient_t *client = ent->client;
 
 	if ( !evolving )
 	{
@@ -1534,26 +1514,18 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 		G_StopFollowing( ent );
 	}
 
-	if ( origin != nullptr )
-	{
-		VectorCopy( origin, spawn_origin );
-	}
+	bool willBeAlive = client->sess.spectatorState == SPECTATOR_NOT;
+	// Documentational assertions: if willBeAlive, spawn/origin/angles are all provided. If not, all null.
+	ASSERT_EQ( willBeAlive, !!spawn );
+	ASSERT_EQ( willBeAlive, !!origin );
+	ASSERT_EQ( willBeAlive, !!angles );
 
-	if ( angles != nullptr )
-	{
-		VectorCopy( angles, spawn_angles );
-	}
-
+	gentity_t *spawnPoint;
+	vec3_t spawn_origin, spawn_angles;
 	// find a spawn point
-	// do it before setting health back up, so farthest
-	// ranging doesn't count this client
-	if ( client->sess.spectatorState != SPECTATOR_NOT )
+	if ( !willBeAlive )
 	{
-		if ( teamLocal == TEAM_NONE )
-		{
-			spawnPoint = G_SelectSpectatorSpawnPoint( spawn_origin, spawn_angles );
-		}
-		else if ( teamLocal == TEAM_ALIENS )
+		if ( teamLocal == TEAM_ALIENS )
 		{
 			spawnPoint = G_SelectAlienLockSpawnPoint( spawn_origin, spawn_angles );
 		}
@@ -1561,15 +1533,16 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 		{
 			spawnPoint = G_SelectHumanLockSpawnPoint( spawn_origin, spawn_angles );
 		}
+		else
+		{
+			spawnPoint = G_SelectSpectatorSpawnPoint( spawn_origin, spawn_angles );
+		}
 	}
 	else
 	{
-		if ( spawn == nullptr )
-		{
-			Sys::Drop( "ClientSpawn: spawn is NULL" );
-		}
-
 		spawnPoint = spawn;
+		VectorCopy( angles, spawn_angles );
+		VectorCopy( origin, spawn_origin );
 
 		if ( spawnPoint->s.eType == entityType_t::ET_BUILDABLE )
 		{
@@ -1596,7 +1569,6 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 	savedSess = client->sess;
 	savedPing = client->ps.ping;
 	savedNoclip = client->noclip;
-	savedCliprcontents = client->cliprcontents;
 
 	for ( i = 0; i < MAX_PERSISTANT; i++ )
 	{
@@ -1604,7 +1576,7 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 	}
 
 	eventSequence = client->ps.eventSequence;
-	memset( client, 0, sizeof( *client ) );
+	ResetStruct( *client );
 
 	client->pers = saved;
 	client->sess = savedSess;
@@ -1618,7 +1590,6 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 		client->pers.devolveReturningCredits = 0;
 	}
 	client->noclip = savedNoclip;
-	client->cliprcontents = savedCliprcontents;
 
 	for ( i = 0; i < MAX_PERSISTANT; i++ )
 	{
@@ -1665,7 +1636,7 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 		BG_AddUpgradeToInventory( UP_MEDKIT, client->ps.stats );
 		weapon = client->pers.humanItemSelection;
 	}
-	else if ( client->sess.spectatorState == SPECTATOR_NOT )
+	else if ( willBeAlive )
 	{
 		weapon = BG_Class( ent->client->pers.classSelection )->startWeapon;
 	}
@@ -1704,8 +1675,7 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 	VectorCopy( spawn_origin, client->ps.origin );
 
 	//give aliens some spawn velocity
-	if ( client->sess.spectatorState == SPECTATOR_NOT &&
-	     client->pers.team == TEAM_ALIENS )
+	if ( willBeAlive && client->pers.team == TEAM_ALIENS )
 	{
 		if ( evolving )
 		{
@@ -1714,8 +1684,7 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 		}
 		else
 		{
-			spawn_angles[ YAW ] += 180.0f;
-			AngleNormalize360( spawn_angles[ YAW ] );
+			spawn_angles[ YAW ] = AngleNormalize360( spawn_angles[ YAW ] + 180.0f );
 
 			if ( spawnPoint->s.origin2[ 2 ] > 0.0f )
 			{
@@ -1731,11 +1700,9 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 			G_AddPredictableEvent( ent, EV_PLAYER_RESPAWN, 0 );
 		}
 	}
-	else if ( client->sess.spectatorState == SPECTATOR_NOT &&
-	          client->pers.team == TEAM_HUMANS )
+	else if ( willBeAlive && client->pers.team == TEAM_HUMANS )
 	{
-		spawn_angles[ YAW ] += 180.0f;
-		AngleNormalize360( spawn_angles[ YAW ] );
+		spawn_angles[ YAW ] = AngleNormalize360( spawn_angles[ YAW ] + 180.0f );
 	}
 
 	// the respawned flag will be cleared after the attack and jump keys come up
@@ -1744,7 +1711,7 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 	trap_GetUsercmd( client->num(), &ent->client->pers.cmd );
 	G_SetClientViewAngle( ent, spawn_angles );
 
-	if ( client->sess.spectatorState == SPECTATOR_NOT )
+	if ( willBeAlive )
 	{
 		trap_LinkEntity( ent );
 
@@ -1796,7 +1763,7 @@ void ClientSpawn( gentity_t *ent, gentity_t *spawn, const vec3_t origin, const v
 	ClientThink( ent->num() );
 
 	// positively link the client, even if the command times are weird
-	if ( client->sess.spectatorState == SPECTATOR_NOT )
+	if ( willBeAlive )
 	{
 		BG_PlayerStateToEntityState( &client->ps, &ent->s, true );
 		VectorCopy( ent->client->ps.origin, ent->r.currentOrigin );

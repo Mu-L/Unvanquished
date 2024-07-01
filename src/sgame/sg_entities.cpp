@@ -32,6 +32,7 @@ Maryland 20850 USA.
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "sg_entities.h"
 #include "CBSE.h"
@@ -189,6 +190,11 @@ void G_FreeEntity( gentity_t *entity )
 
 	unsigned generation = entity->generation;
 
+	if ( entity->id )
+	{
+		BG_Free( entity->id );
+	}
+
 	entity->~gentity_t();
 	new(entity) gentity_t{};
 
@@ -220,8 +226,8 @@ gentity_t *G_NewTempEntity( glm::vec3 origin, int event )
 	newEntity->eventTime = level.time;
 	newEntity->freeAfterEvent = true;
 
-	SnapVector( &origin[0] );  // save network bandwidth
-	G_SetOrigin( newEntity, VEC2GLM( &origin[0] ) );
+	SnapVector( origin );  // save network bandwidth
+	G_SetOrigin( newEntity, origin );
 
 	// find cluster for PVS
 	trap_LinkEntity( newEntity );

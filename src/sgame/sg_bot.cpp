@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_bot_parse.h"
 #include "sg_bot_util.h"
 #include "Entities.h"
@@ -211,22 +212,16 @@ const char * G_BotGetBehavior( int clientNum )
 void G_BotChangeBehavior( int clientNum, Str::StringRef behavior )
 {
 	gentity_t *bot = &g_entities[clientNum];
-
-	if ( !( bot->r.svFlags & SVF_BOT ) || !bot->botMind )
-	{
-		Log::Warn( "'^7%s^*' is not a bot", bot->client->pers.netname );
-		return;
-	}
+	ASSERT( ( bot->r.svFlags & SVF_BOT ) && bot->botMind );
 
 	G_BotSetBehavior( bot->botMind, behavior );
 }
 
 bool G_BotSetBehavior( botMemory_t *botMind, Str::StringRef behavior )
 {
-	botMind->runningNodes.clear();
-	botMind->currentNode = nullptr;
-	botMind->clearNav();
-	BotResetEnemyQueue( &botMind->enemyQueue );
+	G_Bot_ResetBehaviorState( *botMind );
+	botMind->blackboardTransient = 0;
+	botMind->myTimer = level.time;
 
 	botMind->behaviorTree = ReadBehaviorTree( behavior.c_str(), &treeList );
 
@@ -244,13 +239,12 @@ bool G_BotSetBehavior( botMemory_t *botMind, Str::StringRef behavior )
 	return true;
 }
 
-bool G_BotSetDefaults( int clientNum, team_t team, int skill, Str::StringRef behavior )
+bool G_BotSetDefaults( int clientNum, team_t team, Str::StringRef behavior )
 {
 	botMemory_t *botMind;
 	gentity_t *self = &g_entities[ clientNum ];
 	botMind = self->botMind = &g_botMind[clientNum];
-
-	botMind->botTeam = team;
+	ResetStruct( *botMind );
 
 	if ( !G_BotSetBehavior( botMind, behavior ) )
 	{
@@ -297,7 +291,7 @@ bool G_BotAdd( const char *name, team_t team, int skill, const char *behavior, b
 	}
 
 	//default bot data
-	bool okay = G_BotSetDefaults( clientNum, team, skill, behavior );
+	bool okay = G_BotSetDefaults( clientNum, team, behavior );
 
 	// register user information
 	userinfo[0] = '\0';
@@ -319,7 +313,7 @@ bool G_BotAdd( const char *name, team_t team, int skill, const char *behavior, b
 	trap_SetUserinfo( clientNum, userinfo );
 
 	// have it connect to the game as a normal client
-	if ( ( s = ClientBotConnect( clientNum, true, team ) ) )
+	if ( ( s = ClientBotConnect( clientNum, true ) ) )
 	{
 		// won't let us join
 		Log::Warn( s );
@@ -459,6 +453,8 @@ void G_BotThink( gentity_t *self )
 	while ( trap_BotGetServerCommand( self->num(), buf, sizeof( buf ) ) );
 
 	BotSearchForEnemy( self );
+
+	// Populate transient caches
 	BotFindClosestBuildings( self );
 	BotFindDamagedFriendlyStructure( self );
 	BotCalculateStuckTime( self );
@@ -534,6 +530,7 @@ void G_BotSpectatorThink( gentity_t *self )
 	}
 
 	self->botMind->spawnTime = level.time;
+	self->botMind->myTimer = level.time;
 
 	if ( self->client->ps.pm_flags & PMF_QUEUED )
 	{
@@ -559,15 +556,17 @@ void G_BotSpectatorThink( gentity_t *self )
 		return;
 	}
 
-	// reset stuff
-	self->botMind->goal.clear();
-	self->botMind->bestEnemy.ent = nullptr;
-	BotResetEnemyQueue( &self->botMind->enemyQueue );
-	self->botMind->currentNode = nullptr;
-	self->botMind->clearNav();
+	G_Bot_ResetBehaviorState( *self->botMind );
+
+	// Reset non-time-dependent alive state
+	self->botMind->lastThink = -999999;
+	self->botMind->stuckTime = 0;
+	self->botMind->stuckPosition = {1.0e12f, 1.0e12f, 1.0e12f};
 	self->botMind->futureAimTime = 0;
 	self->botMind->futureAimTimeInterval = 0;
-	self->botMind->runningNodes.clear();
+	BotResetEnemyQueue( &self->botMind->enemyQueue );
+	self->botMind->enemyLastSeen = -999999;
+	self->botMind->exhausted = false;
 
 	//FIXME: duplicate of sg_cmds.cpp:883 function "void Cmd_Team_f( gentity_t * )"
 	if ( g_doWarmup.Get() && ( ( level.warmupTime - level.time ) / 1000 ) > 0 )
@@ -798,6 +797,18 @@ void botMemory_t::doSprint( int jumpCost, int stamina, usercmd_t& cmd )
 	exhausted = exhausted && stamina <= jumpCost * 2;
 }
 
+// TODO: also reset state stored in BT nodes
+void G_Bot_ResetBehaviorState( botMemory_t &memory )
+{
+	memory.currentNode = nullptr;
+	memory.runningNodes.clear();
+	memory.goal.clear();
+	memory.clearNav();
+	memory.lastNavconTime = 0;
+	memory.lastNavconDistance = 0;
+	memory.hasOffmeshGoal = false;
+}
+
 // assumes bot is a bot, otherwise will crash.
 static std::string BotGoalToString( gentity_t *bot )
 {
@@ -813,7 +824,7 @@ static std::string BotGoalToString( gentity_t *bot )
 	}
 	else if ( target.targetsCoordinates() )
 	{
-		return vtos( &target.getPos()[0] );
+		return vtos( GLM4READ( target.getPos() ) );
 	}
 
 	return "<unknown goal>";

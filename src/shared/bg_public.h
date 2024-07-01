@@ -38,10 +38,47 @@ template<typename T>
 inline glm::vec3 VEC2GLM( const T& v ) {
 	return glm::vec3( v[0], v[1], v[2] );
 }
+template<typename T>
+inline glm::vec2 VEC2GLM2( const T& v ) {
+	return glm::vec2( v[0], v[1] );
+}
 // A specialised version to warn about useless VEC2GLM mistakes
 DEPRECATED inline glm::vec3 VEC2GLM( glm::vec3 v ) {
 	return v;
 }
+DEPRECATED inline glm::vec2 VEC2GLM2( glm::vec2 v ) {
+	return v;
+}
+
+// Don't allow mistaken conversion without coordinate transformation (use .ToQuake() instead)
+class rVec;
+glm::vec3 VEC2GLM( const rVec& ) = delete;
+
+// Costructs a TEMPORARY, READ-ONLY float array from a GLM vector.
+// Useful when calling functions with a `const vec3_t` argument.
+#define GLM4READ( v ) ( glm4read_impl( v ).data() )
+
+// Consructs a read/write capable proxy object which can be used when calling a function
+// with a mutable vec3_t argument.
+#define GLM4RW( v ) ( glm4rw_impl( v ).data )
+
+
+inline std::array<const vec_t, 3> glm4read_impl( const glm::vec3 &v ) { return { v.x, v.y, v.z }; }
+
+struct glm4rw_impl
+{
+	glm::vec3 &sink;
+	vec3_t data;
+	glm4rw_impl( glm::vec3 &v ) : sink(v)
+	{
+		memcpy( data, &sink, sizeof(data) );
+	}
+
+	~glm4rw_impl()
+	{
+		memcpy( &sink, data, sizeof(data) );
+	}
+};
 
 #include "engine/qcommon/q_shared.h"
 
@@ -1420,12 +1457,14 @@ struct upgradeAttributes_t
 };
 
 // missile record
+// MIS_LCANNON overrides some values at runtime, so you can't assume BG_Missile(MIS_LCANNON)
+// is accurate for it
 struct missileAttributes_t
 {
 	// attributes
 	missile_t      number;
 	const char     *name;
-	bool       pointAgainstWorld;
+	bool       pointAgainstWorld; // don't use the bbox for map collisions
 	int            damage;
 	meansOfDeath_t meansOfDeath;
 	int            splashDamage;
@@ -1437,7 +1476,9 @@ struct missileAttributes_t
 	int            speed;
 	float          lag;
 	int            flags;
+	int            steeringPeriod;
 	int            lifetime;
+	bool           lifeEndExplode; // explode vs. disappear when lifetime expires
 	bool       doKnockback;
 	bool       doLocationalDamage;
 
@@ -1680,6 +1721,8 @@ void     CG_UpdateUnlockables( playerState_t *ps );
 #define MASK_ENTITY      ( CONTENTS_MOVER )
 
 void     *BG_Alloc( size_t size );
+void     *BG_Malloc( size_t size );
+void     *BG_Calloc( size_t size );
 void     BG_Free( void *ptr );
 
 void     BG_EvaluateTrajectory( const trajectory_t *tr, int atTime, vec3_t result );

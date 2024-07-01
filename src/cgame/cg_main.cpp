@@ -26,7 +26,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // cg_main.c -- initialization for cgame
 
+#include "common/Common.h"
 #include "cg_local.h"
+#include "common/cm/cm_public.h"
 #include "cg_key_name.h"
 #include "shared/parse.h"
 #include "shared/navgen/navgen.h"
@@ -70,6 +72,7 @@ Cvar::Range<Cvar::Cvar<int>> cg_drawCrosshairNames("cg_drawCrosshairNames", "dra
 Cvar::Cvar<bool> cg_drawBuildableHealth("cg_drawBuildableHealth", "show buildable health bar when builder", Cvar::NONE, true);
 Cvar::Cvar<bool> cg_drawMinimap("cg_drawMinimap", "show minimap", Cvar::NONE, true);
 Cvar::Cvar<int> cg_minimapActive("cg_minimapActive", "FOR INTERNAL USE", Cvar::NONE, 0);
+Cvar::Cvar<bool> cg_minimapRotate("cg_minimapRotate", "whether to rotate the minimap with the player's view", Cvar::NONE, true);
 Cvar::Cvar<float> cg_crosshairSize("cg_crosshairSize", "crosshair scale factor", Cvar::NONE, 1);
 Cvar::Cvar<bool> cg_draw2D("cg_draw2D", "show HUD", Cvar::NONE, true);
 Cvar::Cvar<bool> cg_debugAnim("cg_debuganim", "show animation debug logs", Cvar::CHEAT, false);
@@ -651,7 +654,7 @@ void CG_RegisterGrading( int slot, const char *str )
 {
 	int   model;
 	float dist;
-	char  texture[MAX_QPATH];
+	char texture[ 128 ];
 
 	if( !str || !*str ) {
 		cgs.gameGradingTextures[ slot ]  = 0;
@@ -660,7 +663,15 @@ void CG_RegisterGrading( int slot, const char *str )
 		return;
 	}
 
-	sscanf(str, "%d %f %63s", &model, &dist, texture);
+	if ( 3 != sscanf( str, "%d %f %127s", &model, &dist, texture ) )
+	{
+		Log::Warn( "CG_RegisterGrading: invalid input" );
+		cgs.gameGradingTextures[slot] = 0;
+		cgs.gameGradingModels[slot] = 0;
+		cgs.gameGradingDistances[slot] = 0.0f;
+		return;
+	}
+
 	cgs.gameGradingTextures[ slot ] =
 		trap_R_RegisterShader(texture, (RegisterShaderFlags_t) ( RSF_NOMIP | RSF_NOLIGHTSCALE ) );
 	cgs.gameGradingModels[ slot ] = model;
@@ -676,18 +687,27 @@ static void CG_RegisterReverb( int slot, const char *str )
 {
 	int   model;
 	float dist, intensity;
-	char  name[MAX_NAME_LENGTH];
+	char  name[ 128 ];
 
 	if( !str || !*str ) {
-		Q_strncpyz(cgs.gameReverbEffects[ slot ], "none", MAX_NAME_LENGTH);
+		Q_strncpyz( cgs.gameReverbEffects[ slot ], "none", sizeof( cgs.gameReverbEffects[ slot ] ) );
 		cgs.gameReverbModels[ slot ]        = 0;
 		cgs.gameReverbDistances[ slot ]     = 0.0f;
 		cgs.gameReverbIntensities[ slot ]   = 0.0f;
 		return;
 	}
 
-	sscanf(str, "%d %f %127s %f", &model, &dist, name, &intensity);
-	Q_strncpyz(cgs.gameReverbEffects[ slot ], name, MAX_NAME_LENGTH);
+	if ( 4 != sscanf( str, "%d %f %127s %f", &model, &dist, name, &intensity ) )
+	{
+		Log::Warn( "CG_RegisterReverb: invalid input" );
+		Q_strncpyz( cgs.gameReverbEffects[ slot ], "none", sizeof( cgs.gameReverbEffects[ slot ] ) );
+		cgs.gameReverbModels[ slot ]        = 0;
+		cgs.gameReverbDistances[ slot ]     = 0.0f;
+		cgs.gameReverbIntensities[ slot ]   = 0.0f;
+		return;
+	}
+
+	Q_strncpyz( cgs.gameReverbEffects[ slot ], name, sizeof( cgs.gameReverbEffects[ slot ] ) );
 	cgs.gameReverbModels[ slot ] = model;
 	cgs.gameReverbDistances[ slot ] = dist;
 	cgs.gameReverbIntensities[ slot ] = intensity;
@@ -728,7 +748,7 @@ static void CG_RegisterGraphics()
 	};
 
 	// clear any references to old media
-	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
+	cg.refdef = {};
 	trap_R_ClearScene();
 
 	CG_UpdateLoadingStep( LOAD_GEOMETRY );

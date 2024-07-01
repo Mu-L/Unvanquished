@@ -2,7 +2,7 @@
 ===========================================================================
 
 Unvanquished GPL Source Code
-Copyright (C) 2012 Unvanquished Developers
+Copyright (C) 2024 Unvanquished Developers
 
 This file is part of the Unvanquished GPL Source Code (Unvanquished Source Code).
 
@@ -31,21 +31,38 @@ Maryland 20850 USA.
 
 ===========================================================================
 */
+#ifndef SHARED_LUA_BUILDABLES_H_
+#define SHARED_LUA_BUILDABLES_H_
 
-#include "../../cg_local.h"
-#include "register_lua_extensions.h"
+#include "common/Common.h"
+#include "shared/bg_lua.h"
+#include "shared/bg_public.h"
+#include "shared/lua/LuaLib.h"
 
-static int Cmd_exec(lua_State* L)
+namespace Shared {
+namespace Lua {
+
+struct BuildableProxy
 {
-	const char *cmd = luaL_checkstring(L, 1);
-	trap_SendConsoleCommand(cmd);
-	return 0;
-}
+	BuildableProxy( int buildable );
 
-void CG_Rocket_RegisterLuaCmd(lua_State* L)
+	const buildableAttributes_t* attributes;
+};
+
+struct Buildables
 {
-	lua_newtable(L);
-	lua_pushcfunction(L, Cmd_exec);
-	lua_setfield(L, -2, "exec");
-	lua_setglobal(L, "Cmd");
-}
+	static int index( lua_State* L );
+	static int pairs( lua_State* L );
+
+	static std::vector<BuildableProxy> buildables;
+};
+
+template<>
+void ExtraInit<Buildables>( lua_State* L, int metatable_index );
+template<>
+void ExtraInit<BuildableProxy>( lua_State* L, int metatable_index );
+
+} // namespace Lua
+} // namespace Shared
+
+#endif  // SHARED_LUA_BUILDABLES_H_

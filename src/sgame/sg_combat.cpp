@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "Entities.h"
 #include "CBSE.h"
@@ -754,7 +755,6 @@ static int ParseDmgScript( damageRegion_t *regions, const char *buf )
 
 void G_InitDamageLocations()
 {
-	const char   *modelName;
 	char         filename[ MAX_QPATH ];
 	int          i;
 	int          len;
@@ -763,8 +763,8 @@ void G_InitDamageLocations()
 
 	for ( i = PCL_NONE + 1; i < PCL_NUM_CLASSES; i++ )
 	{
-		modelName = BG_ClassModelConfig( i )->modelName;
-		Com_sprintf( filename, sizeof( filename ), "configs/classes/%s.locdamage.cfg", modelName );
+
+		Com_sprintf( filename, sizeof( filename ), "configs/classes/%s.locdamage.cfg", BG_Class( i )->name );
 
 		len = BG_FOpenGameOrPakPath( filename, fileHandle );
 
@@ -912,7 +912,7 @@ bool G_SelectiveRadiusDamage( const vec3_t origin, gentity_t *attacker, float da
 		}
 
 		// find the distance from the edge of the bounding box
-		dist = G_DistanceToBBox( origin, ent );
+		dist = G_DistanceToBBox( VEC2GLM( origin ), ent );
 
 		if ( dist >= radius )
 		{
@@ -967,7 +967,7 @@ bool G_RadiusDamage( const vec3_t origin, gentity_t *attacker, float damage,
 		}
 
 		// find the distance from the edge of the bounding box
-		dist = G_DistanceToBBox( origin, ent );
+		dist = G_DistanceToBBox( VEC2GLM( origin ), ent );
 
 		if ( dist >= radius )
 		{

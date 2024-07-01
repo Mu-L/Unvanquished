@@ -32,6 +32,7 @@ Maryland 20850 USA.
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "sg_spawn.h"
 #include "CBSE.h"
@@ -111,8 +112,8 @@ void SP_target_push( gentity_t *self )
 	glm::vec3 angles = VEC2GLM( self->s.angles );
 	glm::vec3 origin2 = VEC2GLM( self->s.origin2 );
 	G_SetMovedir( angles, origin2 );
-	VectorCopy( &angles[0], self->s.angles );
-	VectorCopy( &origin2[0], self->s.origin2 );
+	VectorCopy( angles, self->s.angles );
+	VectorCopy( origin2, self->s.origin2 );
 
 	VectorScale( self->s.origin2, self->mapEntity.config.speed, self->s.origin2 );
 	VectorCopy( self->s.origin, self->r.absmin );
@@ -143,7 +144,7 @@ static void target_teleporter_act( gentity_t *self, gentity_t*, gentity_t *activ
 	if ( !dest )
 		return;
 
-	G_TeleportPlayer( activator, dest->s.origin, dest->s.angles, self->mapEntity.config.speed );
+	G_TeleportPlayer( activator, VEC2GLM( dest->s.origin ), VEC2GLM( dest->s.angles ), self->mapEntity.config.speed );
 }
 
 void SP_target_teleporter( gentity_t *self )

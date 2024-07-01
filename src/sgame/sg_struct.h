@@ -133,6 +133,8 @@ struct gentity_t
 
 	int          flags; // FL_* variables
 
+	char     *id;  // arbitrary id currently only used by Lua. Expected to be unique, but not enforced.
+
 	//entity creation time, i.e. when a building was build or a missile was fired (for diminishing missile damage)
 	int          creationTime;
 
@@ -185,7 +187,7 @@ struct gentity_t
 	 */
 	float        momentumEarned;
 
-	GentityRef   target; // target of trapper, hive, rocketpod, builder's +deconstruct
+	GentityRef   target; // target of hive, rocketpod, builder's +deconstruct
 
 	/* path chaining, not unlike the target/tracker relationship */
 	gentity_t    *nextPathSegment;
@@ -217,7 +219,7 @@ struct gentity_t
 	int       nextthink;
 	void ( *think )( gentity_t *self );
 	void ( *reset )( gentity_t *self );
-	void ( *touch )( gentity_t *self, gentity_t *other, trace_t *trace );
+	void ( *touch )( gentity_t *self, gentity_t *other );
 	void ( *use )( gentity_t *self, gentity_t *other, gentity_t *activator );
 	void ( *pain )( gentity_t *self, gentity_t *attacker, int damage );
 	void ( *die )( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int mod );
@@ -247,8 +249,6 @@ struct gentity_t
 	 * but prefer them over semantically abusing other variables if you are into that sort of thing
 	 */
 	int       damage;
-	int       customNumber;
-
 
 	team_t      buildableTeam; // buildable item team
 	namelog_t   *builtBy; // clientNum of person that built this
@@ -287,8 +287,6 @@ struct gentity_t
 	int         lastDamageTime;
 	int         nextRegenTime;
 
-	bool    pointAgainstWorld; // don't use the bbox for map collisions
-
 	botMemory_t *botMind;
 
 	gentity_t   *alienTag, *humanTag;
@@ -320,8 +318,6 @@ struct clientSession_t
 	spectatorState_t spectatorState;
 	int              spectatorClient; // for chasecam and follow mode
 	team_t           restartTeam; //for !restart keepteams and !restart switchteams
-	int              botSkill;
-	char             botTree[ MAX_QPATH ];
 	clientList_t     ignoreList;
 	int              seenWelcome; // determines if the client has seen server's welcome message
 };
@@ -631,7 +627,7 @@ struct level_locals_t
 	// the buildables are counted efficiently in the server's main entity loop,
 	// these numbers might be slightly outdated
 	// however, the numbers will not be more than two frames behind
-	int numBuildablesEstimate[ BA_NUM_BUILDABLES ];
+	std::array<int, BA_NUM_BUILDABLES> numBuildablesEstimate;
 
 	struct
 	{

@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_bot_ai.h"
 #include "sg_bot_util.h"
 #include "botlib/bot_api.h"
@@ -566,7 +567,7 @@ float BotGetEnemyPriority( gentity_t *self, gentity_t *ent )
 
 // This will only check if the bot is allowed to do so. To check if it *can*,
 // use G_AlienEvolve with dryRun = true, or just try to evolve.
-bool BotCanEvolveToClass( const gentity_t *self, class_t newClass )
+bool BotIsClassAvailable( class_t newClass )
 {
 	equipment_t<class_t>* cl = std::find( std::begin( classes ), std::end( classes ), newClass );
 
@@ -927,7 +928,7 @@ static float BotAimAngle( gentity_t *self, const glm::vec3 &pos )
 {
 	glm::vec3 forward;
 
-	AngleVectors( self->client->ps.viewangles, &forward[0], nullptr, nullptr );
+	AngleVectors( VEC2GLM( self->client->ps.viewangles ), &forward, nullptr, nullptr );
 	glm::vec3 viewPos = BG_GetClientViewOrigin( &self->client->ps );
 	glm::vec3 ideal = pos - viewPos;
 
@@ -1183,6 +1184,9 @@ void BotTargetToRouteTarget( const gentity_t *self, botTarget_t target, botRoute
 	routeTarget->setPos( target.getPos() );
 	BotTargetGetBoundingBox( target, mins, maxs, routeTarget );
 
+	// FIXME: shouldn't we find the true center instead?
+	// (Doesn't matter much since x/y bounds are usually symmetrical and z bounds
+	// almost ignored by bot pathfinding)
 	routeTarget->polyExtents[ 0 ] = std::max( Q_fabs( mins[ 0 ] ), maxs[ 0 ] );
 	routeTarget->polyExtents[ 1 ] = std::max( Q_fabs( mins[ 1 ] ), maxs[ 1 ] );
 	routeTarget->polyExtents[ 2 ] = std::max( Q_fabs( mins[ 2 ] ), maxs[ 2 ] );
@@ -1372,7 +1376,7 @@ bool BotTargetInAttackRange( const gentity_t *self, botTarget_t target )
 
 				// find projectile's final position
 				glm::vec3 npos;
-				BG_EvaluateTrajectory( &t, level.time + BG_Missile( WP_FLAMER )->lifetime, &npos[0] );
+				BG_EvaluateTrajectory( &t, level.time + BG_Missile( WP_FLAMER )->lifetime, GLM4RW( npos ) );
 
 				// find distance traveled by projectile along fire line
 				glm::vec3 proj = ProjectPointOntoVector( npos, muzzle, targetPos );
@@ -1469,7 +1473,7 @@ bool BotEntityIsValidEnemyTarget( const gentity_t *self, const gentity_t *enemy 
 	}
 
 	// dretch limitations
-	if ( self->client->ps.stats[STAT_CLASS] == PCL_ALIEN_LEVEL0 && !G_DretchCanDamageEntity( self, enemy ) )
+	if ( self->client->ps.stats[STAT_CLASS] == PCL_ALIEN_LEVEL0 && !G_DretchCanDamageEntity( enemy ) )
 	{
 		return false;
 	}
@@ -1489,12 +1493,12 @@ bool BotTargetIsVisible( const gentity_t *self, botTarget_t target, int mask )
 	muzzle = G_CalcMuzzlePoint( self, forward );
 	targetPos = target.getPos();
 
-	if ( !trap_InPVS( &muzzle[0], &targetPos[0] ) )
+	if ( !trap_InPVS( GLM4READ( muzzle ), GLM4READ( targetPos ) ) )
 	{
 		return false;
 	}
 
-	trap_Trace( &trace, &muzzle[0], nullptr, nullptr, &targetPos[0], self->num(), mask, 0 );
+	trap_Trace( &trace, muzzle, {}, {}, targetPos, self->num(), mask, 0 );
 
 	if ( trace.surfaceFlags & SURF_NOIMPACT )
 	{
@@ -1560,7 +1564,8 @@ glm::vec3 BotGetIdealAimLocation( gentity_t *self, const botTarget_t &target, in
 				weapon_speed = PRIFLE_SPEED;
 				break;
 			case WP_LUCIFER_CANNON:
-				weapon_speed = LCANNON_SPEED;
+				// FIXME: assumes primary attack (which is slower)
+				weapon_speed = BG_Missile( MIS_LCANNON )->speed;
 				break;
 			}
 			if( weapon_speed )
@@ -1608,7 +1613,7 @@ void BotAimAtEnemy( gentity_t *self )
 
 	VectorSet( self->client->ps.delta_angles, 0, 0, 0 );
 	glm::vec3 angles;
-	vectoangles( &newAim[0], &angles[0] );
+	vectoangles( GLM4READ( newAim ), GLM4RW( angles ) );
 
 	for ( int i = 0; i < 3; i++ )
 	{
@@ -1627,10 +1632,10 @@ void BotAimAtLocation( gentity_t *self, const glm::vec3 &target )
 		return;
 	}
 
-	BG_GetClientViewOrigin( &self->client->ps, &viewBase[0] );
+	BG_GetClientViewOrigin( &self->client->ps, GLM4RW( viewBase ) );
 	aimVec = target - viewBase;
 
-	vectoangles( &aimVec[0], &aimAngles[0] );
+	vectoangles( GLM4READ( aimVec ), GLM4RW( aimAngles ) );
 
 	VectorSet( self->client->ps.delta_angles, 0.0f, 0.0f, 0.0f );
 
@@ -2028,7 +2033,7 @@ void BotFireWeaponAI( gentity_t *self )
 	muzzle = G_CalcMuzzlePoint( self, forward );
 	glm::vec3 targetPos = BotGetIdealAimLocation( self, self->botMind->goal, 0 );
 
-	trap_Trace( &trace, &muzzle[0], nullptr, nullptr, &targetPos[0], self->num(), MASK_SHOT, 0 );
+	trap_Trace( &trace, muzzle, {}, {}, targetPos, self->num(), MASK_SHOT, 0 );
 	distance = glm::distance( muzzle, VEC2GLM( trace.endpos ) );
 	bool readyFire = self->client->ps.IsWeaponReady();
 	glm::vec3 target = self->botMind->goal.getPos();
@@ -2168,7 +2173,7 @@ void BotFireWeaponAI( gentity_t *self )
 					targetMaxHP = static_cast<float>( targetAttr->health );
 				}
 				// TODO: use charging is there are more than one enemies around
-				if ( targetMaxHP <= LCANNON_SECONDARY_DAMAGE || selfHP <= CRITICAL_HEALTH )
+				if ( targetMaxHP <= BG_Missile( MIS_LCANNON2 )->damage || selfHP <= CRITICAL_HEALTH )
 				{
 					BotFireWeapon( WPM_SECONDARY, botCmdBuffer );
 				}
@@ -2200,7 +2205,7 @@ void BotFireWeaponAI( gentity_t *self )
 static bool BotChangeHumanClass( gentity_t *self, class_t newClass )
 {
 	glm::vec3 newOrigin;
-	if ( !G_RoomForClassChange( self, newClass, &newOrigin[0] ) )
+	if ( !G_RoomForClassChange( self, newClass, GLM4RW( newOrigin ) ) )
 	{
 		return false;
 	}
@@ -2221,7 +2226,7 @@ bool BotEvolveToClass( gentity_t *ent, class_t newClass )
 		return true;
 	}
 
-	if ( !BotCanEvolveToClass( ent, newClass ) )
+	if ( !BotIsClassAvailable( newClass ) )
 	{
 		return false;
 	}
@@ -2460,7 +2465,7 @@ void BotSellUpgrades( gentity_t *self )
 			{
 				glm::vec3 newOrigin = {};
 
-				if ( !G_RoomForClassChange( self, PCL_HUMAN_NAKED, &newOrigin[0] ) )
+				if ( !G_RoomForClassChange( self, PCL_HUMAN_NAKED, GLM4RW( newOrigin ) ) )
 				{
 					continue;
 				}
@@ -2499,9 +2504,7 @@ void BotSetSkillLevel( gentity_t *self, int skill )
 
 void BotResetEnemyQueue( enemyQueue_t *queue )
 {
-	queue->front = 0;
-	queue->back = 0;
-	memset( queue->enemys, 0, sizeof( queue->enemys ) );
+	*queue = {};
 }
 
 static void BotPushEnemy( enemyQueue_t *queue, gentity_t *enemy )

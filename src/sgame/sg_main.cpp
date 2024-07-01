@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "shared/parse.h"
 #include "Entities.h"
@@ -31,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "backend/CBSEBackend.h"
 #include "botlib/bot_api.h"
 #include "common/FileSystem.h"
+#include "lua/Interpreter.h"
 
 #define INTERMISSION_DELAY_TIME 1000
 
@@ -646,6 +648,9 @@ void G_InitGame( int levelTime, int randomSeed, bool inClient )
 
 	// Initialize build point counts for the intial layout.
 	G_UpdateBuildPointBudgets();
+
+	// Initialize Lua
+	Lua::Initialize();
 }
 
 /*
@@ -720,11 +725,12 @@ void G_ShutdownGame( int /* restart */ )
 		level.logGameplayFile = 0;
 	}
 
-	// write all the client session data so we can get it back
+	G_BotCleanup();
+
+	// write all the non-bot client session data so we can get it back
 	G_WriteSessionData();
 
 	G_admin_cleanup();
-	G_BotCleanup();
 	G_namelog_cleanup();
 
 	G_UnregisterCommands();
@@ -735,6 +741,8 @@ void G_ShutdownGame( int /* restart */ )
 	level.restarted = false;
 	level.surrenderTeam = TEAM_NONE;
 	trap_SetConfigstring( CS_WINNER, "" );
+
+	Lua::Shutdown();
 
 	/*
 	 * delete cbse entities attached to gentities
@@ -1817,7 +1825,6 @@ static void CheckIntermissionExit()
 	int          ready, notReady;
 	int          i;
 	gclient_t    *cl;
-	clientList_t readyMasks;
 	bool     voting = G_VotesRunning();
 
 	//if no clients are connected, just exit
@@ -1830,7 +1837,7 @@ static void CheckIntermissionExit()
 	// see which players are ready
 	ready = 0;
 	notReady = 0;
-	memset( &readyMasks, 0, sizeof( readyMasks ) );
+	clientList_t readyMasks{};
 
 	for ( i = 0; i < level.maxclients; i++ )
 	{
@@ -2214,7 +2221,7 @@ void G_RunFrame( int levelTime )
 
 	G_CheckPmoveParamChanges();
 
-	int numBuildables[ BA_NUM_BUILDABLES ] = {};
+	std::array<int, BA_NUM_BUILDABLES> numBuildables = {};
 
 	// go through all allocated objects
 	ent = &g_entities[ 0 ];
@@ -2254,10 +2261,6 @@ void G_RunFrame( int levelTime )
 		// think/run entity by type
 		switch ( ent->s.eType )
 		{
-			case entityType_t::ET_MISSILE:
-				G_RunMissile( ent );
-				continue;
-
 			case entityType_t::ET_BUILDABLE:
 				// TODO: Do buildables make any use of G_Physics' functionality apart from the call
 				//       to G_RunThink?
@@ -2361,7 +2364,7 @@ void G_RunFrame( int levelTime )
 	BotDebugDrawMesh();
 	G_BotUpdateObstacles();
 
-	memcpy( level.numBuildablesEstimate, numBuildables, sizeof( level.numBuildablesEstimate ) );
+	level.numBuildablesEstimate = numBuildables;
 }
 
 void G_PrepareEntityNetCode() {

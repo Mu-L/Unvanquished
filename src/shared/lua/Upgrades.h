@@ -2,7 +2,7 @@
 ===========================================================================
 
 Unvanquished GPL Source Code
-Copyright (C) 2012 Unvanquished Developers
+Copyright (C) 2024 Unvanquished Developers
 
 This file is part of the Unvanquished GPL Source Code (Unvanquished Source Code).
 
@@ -31,75 +31,38 @@ Maryland 20850 USA.
 
 ===========================================================================
 */
+#ifndef SHARED_LUA_UPGRADES_H_
+#define SHARED_LUA_UPGRADES_H_
 
-#include "../../cg_local.h"
-#include "register_lua_extensions.h"
+#include "common/Common.h"
+#include "shared/bg_lua.h"
+#include "shared/bg_public.h"
+#include "shared/lua/LuaLib.h"
 
-namespace {
-class Timer
+namespace Shared {
+namespace Lua {
+
+struct UpgradeProxy
 {
-public:
-	void Add(int delayMs, int callbackRef, lua_State* L)
-	{
-		events.push_back({delayMs, callbackRef, L});
-	}
+	UpgradeProxy( int upgrade );
 
-	void RunUpdate( int time )
-	{
-		int dtMs = time - lastTime;
-		lastTime = time;
-
-		auto it = events.begin();
-		while (it != events.end())
-		{
-			it->delayMs -= dtMs;
-			if (it->delayMs <= 0)
-			{
-				lua_rawgeti(it->L, LUA_REGISTRYINDEX, it->callbackRef);
-				luaL_unref(it->L, LUA_REGISTRYINDEX, it->callbackRef);
-				if (lua_pcall(it->L, 0, 0, 0) != 0)
-					Log::Warn( "Could not run lua timer callback: %s",
-						lua_tostring(it->L, -1));
-				it = events.erase(it);
-			}
-			else
-			{
-				++it;
-			}
-		}
-	}
-
-private:
-	struct TimerEvent
-	{
-		int delayMs;
-		int callbackRef;
-		lua_State* L;
-	};
-	int lastTime;
-	std::list<TimerEvent> events;
+	const upgradeAttributes_t* attributes;
 };
-} //namespace
 
-static Timer timer;
-
-static int Timer_add( lua_State* L )
+struct Upgrades
 {
-	int delayMs = luaL_checkinteger(L, 1);
-	int ref = luaL_ref(L, LUA_REGISTRYINDEX);
-	timer.Add(delayMs, ref, L);
-	return 0;
-}
+	static int index( lua_State* L );
+	static int pairs( lua_State* L );
 
-void CG_Rocket_RegisterLuaTimer(lua_State* L)
-{
-	lua_newtable(L);
-	lua_pushcfunction(L, Timer_add);
-	lua_setfield(L, -2, "add");
-	lua_setglobal(L, "Timer");
-}
+	static std::vector<UpgradeProxy> upgrades;
+};
 
-void CG_Rocket_UpdateLuaTimers(int time)
-{
-	timer.RunUpdate(time);
-}
+template<>
+void ExtraInit<Upgrades>( lua_State* L, int metatable_index );
+template<>
+void ExtraInit<UpgradeProxy>( lua_State* L, int metatable_index );
+
+}  // namespace Lua
+}  // namespace Shared
+
+#endif  // SHARED_LUA_UPGRADES_H_

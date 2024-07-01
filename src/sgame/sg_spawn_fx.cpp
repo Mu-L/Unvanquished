@@ -32,6 +32,7 @@ Maryland 20850 USA.
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "sg_spawn.h"
 
@@ -182,7 +183,7 @@ void SP_fx_rumble( gentity_t *self )
 		}
 		else
 		{
-			self->customNumber = 10;
+			self->mapEntity.customNumber = 10;
 		}
 	}
 

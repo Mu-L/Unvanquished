@@ -32,6 +32,7 @@ Maryland 20850 USA.
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "sg_spawn.h"
 
@@ -43,8 +44,8 @@ static void InitBrushSensor( gentity_t *self )
 		glm::vec3 angles = VEC2GLM( self->s.angles );
 		glm::vec3 movedir = VEC2GLM( self->mapEntity.movedir );
 		G_SetMovedir( angles, movedir );
-		VectorCopy( &angles[0], self->s.angles );
-		VectorCopy( &movedir[0], self->mapEntity.movedir );
+		VectorCopy( angles, self->s.angles );
+		VectorCopy( movedir, self->mapEntity.movedir );
 	}
 
 	trap_SetBrushModel( self, self->mapEntity.model );
@@ -126,7 +127,7 @@ static void trigger_multiple_act( gentity_t *self, gentity_t*,
 	trigger_checkWaitForReactivation( self );
 }
 
-static void trigger_multiple_touch( gentity_t *self, gentity_t *other, trace_t* )
+static void trigger_multiple_touch( gentity_t *self, gentity_t *other )
 {
 	trigger_multiple_act( self, other, other );
 }
@@ -344,7 +345,7 @@ static bool sensor_buildable_match( gentity_t *self, gentity_t *activator )
 	return false;
 }
 
-static void sensor_buildable_touch( gentity_t *self, gentity_t *activator, trace_t* )
+static void sensor_buildable_touch( gentity_t *self, gentity_t *activator )
 {
 	//sanity check
 	if ( !activator || activator->s.eType != entityType_t::ET_BUILDABLE )
@@ -458,7 +459,7 @@ static bool sensor_equipment_match( gentity_t *self, gentity_t *activator )
 	return false;
 }
 
-static void sensor_player_touch( gentity_t *self, gentity_t *activator, trace_t* )
+static void sensor_player_touch( gentity_t *self, gentity_t *activator )
 {
 	bool shouldFire;
 

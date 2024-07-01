@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "Entities.h"
 #include "CBSE.h"
@@ -378,16 +379,12 @@ ClientImpacts
 static void ClientImpacts( gentity_t *ent, pmove_t *pm )
 {
 	int       i;
-	trace_t   trace;
 	gentity_t *other;
 
 	if( !ent || !ent->client )
 	{
 		return;
 	}
-
-	// clear a fake trace struct for touch function
-	memset( &trace, 0, sizeof( trace ) );
 
 	for ( i = 0; i < pm->numtouch; i++ )
 	{
@@ -434,7 +431,7 @@ static void ClientImpacts( gentity_t *ent, pmove_t *pm )
 		// touch triggers
 		if ( other->touch )
 		{
-			other->touch( other, ent, &trace );
+			other->touch( other, ent );
 		}
 	}
 }
@@ -452,7 +449,6 @@ void  G_TouchTriggers( gentity_t *ent )
 	int              i, num;
 	int              touch[ MAX_GENTITIES ];
 	gentity_t        *hit;
-	trace_t          trace;
 	vec3_t           mins, maxs;
 	vec3_t           pmins, pmaxs;
 	static const     vec3_t range = { 10, 10, 10 };
@@ -519,11 +515,9 @@ void  G_TouchTriggers( gentity_t *ent )
 			continue;
 		}
 
-		memset( &trace, 0, sizeof( trace ) );
-
 		if ( hit->touch )
 		{
-			hit->touch( hit, ent, &trace );
+			hit->touch( hit, ent );
 		}
 	}
 }
@@ -667,7 +661,7 @@ static void SpectatorThink( gentity_t *ent, usercmd_t *ucmd )
 		client->ps.weaponCharge = 0;
 
 		// Set up for pmove
-		memset( &pm, 0, sizeof( pm ) );
+		pm = {};
 		pm.ps = &client->ps;
 		pm.pmext = &client->pmext;
 		pm.cmd = *ucmd;
@@ -864,7 +858,7 @@ static void BeaconAutoTag( gentity_t *self, int timePassed )
 	VectorMA( viewOrigin, 65536, forward, end );
 
 	G_UnlaggedOn( self, viewOrigin, 65536 );
-	traceEnt = Beacon::TagTrace( viewOrigin, end, self->s.number, MASK_SHOT, team, true );
+	traceEnt = Beacon::TagTrace( VEC2GLM( viewOrigin ), VEC2GLM( end ), self->s.number, MASK_SHOT, team, true );
 	G_UnlaggedOff( );
 
 	if ( traceEnt )
@@ -2054,7 +2048,7 @@ static void ClientThink_real( gentity_t *self )
 	// set up for pmove
 	oldEventSequence = client->ps.eventSequence;
 
-	memset( &pm, 0, sizeof( pm ) );
+	pm = {};
 
 	// clear fall impact velocity before every pmove
 	VectorSet( client->pmext.fallImpactVelocity, 0.0f, 0.0f, 0.0f );
@@ -2207,7 +2201,7 @@ static void ClientThink_real( gentity_t *self )
 	     Entities::IsAlive( self ) )
 	{
 		trace_t   trace;
-		vec3_t    view, point;
+		vec3_t    view;
 		gentity_t *ent;
 
 		// look for object infront of player
@@ -2217,11 +2211,12 @@ static void ClientThink_real( gentity_t *self )
 		// should take target's radius instead, but let's try with that for now
 		glm::vec3 mins, maxs;
 		BG_BoundingBox( static_cast<class_t>( client->ps.stats[STAT_CLASS] ), &mins, &maxs, nullptr, nullptr, nullptr );
-		auto range1 = ENTITY_USE_RANGE + RadiusFromBounds( &mins[0], &maxs[0] );
+		auto range1 = ENTITY_USE_RANGE + RadiusFromBounds( GLM4READ( mins ), GLM4READ( maxs ) );
 
 		AngleVectors( client->ps.viewangles, view, nullptr, nullptr );
+		glm::vec3 point;
 		VectorMA( viewpoint, range1, view, point );
-		trap_Trace( &trace, &viewpoint[0], nullptr, nullptr, point, self->s.number, MASK_SHOT, 0 );
+		trap_Trace( &trace, viewpoint, {}, {}, point, self->s.number, MASK_SHOT, 0 );
 
 		ent = &g_entities[ trace.entityNum ];
 		bool activableTarget = ent->s.eType == entityType_t::ET_BUILDABLE || ent->s.eType == entityType_t::ET_MOVER;

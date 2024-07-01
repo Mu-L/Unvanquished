@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_bot_ai.h"
 #include "sg_bot_util.h"
 #include "botlib/bot_api.h"
@@ -1301,7 +1302,7 @@ static bool build( gentity_t *self, buildable_t toBuild )
 	return true;
 }
 
-AINodeStatus_t BotActionBuildNowChosenBuildable( gentity_t *self, AIGenericNode_t *node )
+AINodeStatus_t BotActionBuildNowChosenBuildable( gentity_t *self, AIGenericNode_t * )
 {
 	if ( !isBuilder( self ) )
 	{

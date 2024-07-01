@@ -24,8 +24,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "common/FileSystem.h"
 #include "shared/bg_gameplay.h"
+#include "shared/parse.h"
 #include "sg_local.h"
 #include "CustomSurfaceFlags.h"
 #include "Entities.h"
@@ -142,7 +144,7 @@ bool G_InsideBase(gentity_t *self) {
 	return trap_InPVSIgnorePortals(self->s.origin, mainBuilding->s.origin);
 }
 
-bool G_DretchCanDamageEntity( const gentity_t *self, const gentity_t *ent )
+bool G_DretchCanDamageEntity( const gentity_t *ent )
 {
 	switch (ent->s.eType)
 	{
@@ -269,7 +271,7 @@ static void ABarricade_Think( gentity_t *self )
 	ABarricade_Shrink( self, !self->powered );
 }
 
-static void ABarricade_Touch( gentity_t *self, gentity_t *other, trace_t* )
+static void ABarricade_Touch( gentity_t *self, gentity_t *other )
 {
 	gclient_t *client = other->client;
 	int       client_z, min_z;
@@ -320,7 +322,7 @@ static void ABooster_Think( gentity_t *self )
 	}
 }
 
-static void ABooster_Touch( gentity_t *self, gentity_t *other, trace_t* )
+static void ABooster_Touch( gentity_t *self, gentity_t *other )
 {
 	gclient_t *client = other->client;
 
@@ -347,193 +349,6 @@ static void ABooster_Touch( gentity_t *self, gentity_t *other, trace_t* )
 	client->ps.stats[ STAT_STATE ] |= SS_BOOSTED;
 	client->ps.stats[ STAT_STATE ] |= SS_BOOSTEDNEW;
 	client->boostedTime = level.time;
-}
-
-#define MISSILE_PRESTEP_TIME 50 // from g_missile.h
-#define TRAPPER_ACCURACY 10 // lower is better
-
-static void ATrapper_FireOnEnemy( gentity_t *self, int firespeed )
-{
-	gentity_t *target = self->target.entity;
-	vec3_t    dirToTarget;
-	vec3_t    halfAcceleration, thirdJerk;
-	float     distanceToTarget = LOCKBLOB_RANGE;
-	int       lowMsec = 0;
-	int       highMsec = ( int )( (
-	                                ( ( distanceToTarget * LOCKBLOB_SPEED ) +
-	                                  ( distanceToTarget * BG_Class( target->client->ps.stats[ STAT_CLASS ] )->speed ) ) /
-	                                ( LOCKBLOB_SPEED * LOCKBLOB_SPEED ) ) * 1000.0f );
-
-	VectorScale( target->acceleration, 1.0f / 2.0f, halfAcceleration );
-	VectorScale( target->jerk, 1.0f / 3.0f, thirdJerk );
-
-	// highMsec and lowMsec can only move toward
-	// one another, so the loop must terminate
-	while ( highMsec - lowMsec > TRAPPER_ACCURACY )
-	{
-		int   partitionMsec = ( highMsec + lowMsec ) / 2;
-		float time = ( float ) partitionMsec / 1000.0f;
-		float projectileDistance = LOCKBLOB_SPEED * ( time + MISSILE_PRESTEP_TIME / 1000.0f );
-
-		VectorMA( target->s.pos.trBase, time, target->s.pos.trDelta, dirToTarget );
-		VectorMA( dirToTarget, time * time, halfAcceleration, dirToTarget );
-		VectorMA( dirToTarget, time * time * time, thirdJerk, dirToTarget );
-		VectorSubtract( dirToTarget, self->s.pos.trBase, dirToTarget );
-		distanceToTarget = VectorLength( dirToTarget );
-
-		if ( projectileDistance < distanceToTarget )
-		{
-			lowMsec = partitionMsec;
-		}
-		else if ( projectileDistance > distanceToTarget )
-		{
-			highMsec = partitionMsec;
-		}
-		else if ( projectileDistance == distanceToTarget )
-		{
-			break; // unlikely to happen
-		}
-	}
-
-	VectorNormalize( dirToTarget );
-
-	//fire at target
-	G_SpawnMissile( MIS_LOCKBLOB, self, self->s.pos.trBase, dirToTarget, nullptr,
-	                G_ExplodeMissile, level.time + BG_Missile( MIS_LOCKBLOB )->lifetime );
-	G_SetBuildableAnim( self, BANIM_ATTACK1, false );
-	self->customNumber = level.time + firespeed;
-}
-
-static bool ATrapper_CheckTarget( gentity_t *self, GentityRef target, int range )
-{
-	vec3_t  distance;
-	trace_t trace;
-
-	if ( !target ) // Do we have a target?
-	{
-		return false;
-	}
-
-	if ( !target->inuse ) // Does the target still exist?
-	{
-		return false;
-	}
-
-	if ( target.entity == self ) // is the target us?
-	{
-		return false;
-	}
-
-	if ( !target->client ) // is the target a bot or player?
-	{
-		return false;
-	}
-
-	if ( target->flags & FL_NOTARGET ) // is the target cheating?
-	{
-		return false;
-	}
-
-	if ( target->client->pers.team == TEAM_ALIENS ) // one of us?
-	{
-		return false;
-	}
-
-	if ( target->client->sess.spectatorState != SPECTATOR_NOT ) // is the target alive?
-	{
-		return false;
-	}
-
-	if ( Entities::IsDead( target.entity ) ) // is the target still alive?
-	{
-		return false;
-	}
-
-	if ( target->client->ps.stats[ STAT_STATE ] & SS_BLOBLOCKED ) // locked?
-	{
-		return false;
-	}
-
-	VectorSubtract( target->r.currentOrigin, self->r.currentOrigin, distance );
-
-	if ( VectorLength( distance ) > range )  // is the target within range?
-	{
-		return false;
-	}
-
-	//only allow a narrow field of "vision"
-	VectorNormalize( distance );  //is now direction of target
-
-	if ( DotProduct( distance, self->s.origin2 ) < LOCKBLOB_DOT )
-	{
-		return false;
-	}
-
-	trap_Trace( &trace, self->s.pos.trBase, nullptr, nullptr, target->s.pos.trBase, self->num(),
-	            MASK_SHOT, 0 );
-
-	if ( trace.contents & CONTENTS_SOLID ) // can we see the target?
-	{
-		return false;
-	}
-
-	return true;
-}
-
-static void ATrapper_FindEnemy( gentity_t *ent, int range )
-{
-	GentityRef target;
-	int       i;
-	int       start;
-
-	// iterate through entities
-	start = rand() / ( RAND_MAX / MAX_CLIENTS + 1 );
-
-	for ( i = start; i < MAX_CLIENTS + start; i++ )
-	{
-		target = g_entities + ( i % MAX_CLIENTS );
-
-		//if target is not valid keep searching
-		if ( !ATrapper_CheckTarget( ent, target, range ) )
-		{
-			continue;
-		}
-
-		//we found a target
-		ent->target = target;
-		return;
-	}
-
-	//couldn't find a target
-	ent->target = nullptr;
-}
-
-static void ATrapper_Think( gentity_t *self )
-{
-	self->nextthink = level.time + 100;
-
-	if ( !self->spawned || !self->powered || Entities::IsDead( self ) )
-	{
-		return;
-	}
-
-	//if the current target is not valid find a new one
-	if ( !ATrapper_CheckTarget( self, self->target, LOCKBLOB_RANGE ) )
-	{
-		ATrapper_FindEnemy( self, LOCKBLOB_RANGE );
-	}
-
-	//if a new target cannot be found don't do anything
-	if ( !self->target )
-	{
-		return;
-	}
-
-	//if we are pointing at our target and we can fire shoot it
-	if ( self->customNumber < level.time )
-	{
-		ATrapper_FireOnEnemy( self, LOCKBLOB_REPEAT );
-	}
 }
 
 static void HArmoury_Use( gentity_t *self, gentity_t*, gentity_t *activator )
@@ -676,7 +491,6 @@ void G_BuildableTouchTriggers( gentity_t *ent )
 	int              i, num;
 	int              touch[ MAX_GENTITIES ];
 	gentity_t        *hit;
-	trace_t          trace;
 	vec3_t           mins, maxs;
 	vec3_t           bmins, bmaxs;
 	static    vec3_t range = { 10, 10, 10 };
@@ -730,11 +544,9 @@ void G_BuildableTouchTriggers( gentity_t *ent )
 			continue;
 		}
 
-		memset( &trace, 0, sizeof( trace ) );
-
 		if ( hit->touch )
 		{
-			hit->touch( hit, ent, &trace );
+			hit->touch( hit, ent );
 		}
 	}
 }
@@ -1782,7 +1594,6 @@ static gentity_t *SpawnBuildable( gentity_t *builder, buildable_t buildable, con
 			break;
 
 		case BA_A_TRAPPER:
-			built->think = ATrapper_Think;
 			break;
 
 		case BA_A_LEECH:
@@ -2291,80 +2102,61 @@ static void LayoutBuildItem( buildable_t buildable, vec3_t origin,
 
 void G_LayoutLoad()
 {
-	fileHandle_t f;
-	int          len;
-	char         *layout, *layoutHead;
-	char         map[ MAX_QPATH ];
-	char         buildName[ MAX_TOKEN_CHARS ];
-	int          buildable;
-	vec3_t       origin = { 0.0f, 0.0f, 0.0f };
-	vec3_t       angles = { 0.0f, 0.0f, 0.0f };
-	vec3_t       origin2 = { 0.0f, 0.0f, 0.0f };
-	vec3_t       angles2 = { 0.0f, 0.0f, 0.0f };
-	char         line[ MAX_STRING_CHARS ];
-	int          i = 0;
-	const buildableAttributes_t *attr;
-
 	if ( !level.layout[ 0 ] || !Q_stricmp( level.layout, S_BUILTIN_LAYOUT ) )
 	{
 		return;
 	}
 
-	trap_Cvar_VariableStringBuffer( "mapname", map, sizeof( map ) );
-	len = BG_FOpenGameOrPakPath( va( "layouts/%s/%s.dat", map, level.layout ), f );
-
+	int f;
+	std::string path = Str::Format( "layouts/%s/%s.dat" , Cvar::GetValue( "mapname" ), level.layout );
+	int len = BG_FOpenGameOrPakPath( path, f );
 	if ( len < 0 )
 	{
 		Log::Warn( "layout %s could not be opened", level.layout );
 		return;
 	}
 
-	layoutHead = layout = (char*) BG_Alloc( len + 1 );
-	trap_FS_Read( layout, len, f );
-	layout[ len ] = '\0';
+	std::string data;
+	data.resize( len );
+	trap_FS_Read( &data[ 0 ], len, f );
 	trap_FS_FCloseFile( f );
 
-	while ( *layout )
+	for ( Parse_WordListSplitter parse{std::move( data ), "\n"}; *parse; ++parse )
 	{
-		if ( i >= (int) sizeof( line ) - 1 )
+		char         buildName[ 128 ];
+		vec3_t       origin;
+		vec3_t       angles;
+		vec3_t       origin2;
+		vec3_t       angles2;
+
+		int n = sscanf( *parse, "%127s %f %f %f %f %f %f %f %f %f %f %f %f",
+		                buildName,
+		                &origin[ 0 ], &origin[ 1 ], &origin[ 2 ],
+		                &angles[ 0 ], &angles[ 1 ], &angles[ 2 ],
+		                &origin2[ 0 ], &origin2[ 1 ], &origin2[ 2 ],
+		                &angles2[ 0 ], &angles2[ 1 ], &angles2[ 2 ] );
+
+		if ( n != 13 )
 		{
-			Log::Warn( "line overflow in %s before \"%s\"",
-			          va( "layouts/%s/%s.dat", map, level.layout ), line );
-			break;
+			if ( n > 0 )
+			{
+				Log::Warn( "bad line in layout %s: '%s'", path, *parse );
+			}
+
+			continue;
 		}
 
-		line[ i++ ] = *layout;
-		line[ i ] = '\0';
+		const buildableAttributes_t *attr = BG_BuildableByName( buildName );
 
-		if ( *layout == '\n' )
+		if ( attr->number == BA_NONE )
 		{
-			i = 0;
-			sscanf( line, "%1023s %f %f %f %f %f %f %f %f %f %f %f %f\n",
-			        buildName,
-			        &origin[ 0 ], &origin[ 1 ], &origin[ 2 ],
-			        &angles[ 0 ], &angles[ 1 ], &angles[ 2 ],
-			        &origin2[ 0 ], &origin2[ 1 ], &origin2[ 2 ],
-			        &angles2[ 0 ], &angles2[ 1 ], &angles2[ 2 ] );
-
-			attr = BG_BuildableByName( buildName );
-			buildable = attr->number;
-
-			if ( buildable <= BA_NONE || buildable >= BA_NUM_BUILDABLES )
-			{
-				Log::Warn( "bad buildable name (%s) in layout."
-				          " skipping", buildName );
-			}
-			else
-			{
-				LayoutBuildItem( (buildable_t) buildable, origin, angles, origin2, angles2 );
-				level.team[ attr->team ].layoutBuildPoints += attr->buildPoints;
-			}
+			Log::Warn( "bad buildable name (%s) in layout. skipping", buildName );
+			continue;
 		}
 
-		layout++;
+		LayoutBuildItem( attr->number, origin, angles, origin2, angles2 );
+		level.team[ attr->team ].layoutBuildPoints += attr->buildPoints;
 	}
-
-	BG_Free( layoutHead );
 }
 
 void G_BaseSelfDestruct( team_t team )

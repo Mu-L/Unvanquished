@@ -31,6 +31,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "engine/server/sg_msgdef.h"
 #include "shared/VMMain.h"
 #include "DetourDebugDraw.h"
@@ -94,8 +95,7 @@ void DebugDrawQuake::vertex(const float* pos, unsigned int c)
 
 void DebugDrawQuake::vertex(const float x, const float y, const float z, unsigned int color)
 {
-	glm::vec3 vert{ x, y, z };
-	recast2quake( &vert[0] );
+	glm::vec3 vert{ x, z, y };
 	commands.Write<debugDrawCommand_t>(debugDrawCommand_t::VERTEX);
 	commands.Write<glm::vec3>(vert);
 	commands.Write<unsigned int>(color);
@@ -130,7 +130,7 @@ void DebugDrawQuake::vertex(const float *pos, unsigned int color, const float* u
 	vertex(pos[0], pos[1], pos[2], color, uv[0], uv[1]);
 }
 
-void DebugDrawQuake::vertex(const float x, const float y, const float z, unsigned int color, const float u, const float v)
+void DebugDrawQuake::vertex(const float x, const float y, const float z, unsigned int color, const float, const float)
 {
 	Log::Warn("DebugDrawQuake: texture coordinates have no effect");
 	vertex(x, y, z, color);

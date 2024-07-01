@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "Entities.h"
 
@@ -102,7 +103,7 @@ void G_AreaTeamCommand( const gentity_t *ent, const char *cmd )
 	glm::vec3 maxs = VEC2GLM( ent->s.origin ) + range;
 	glm::vec3 mins = VEC2GLM( ent->s.origin ) - range;
 
-	num = trap_EntitiesInBox( &mins[0], &maxs[0], entityList, MAX_GENTITIES );
+	num = trap_EntitiesInBox( GLM4READ( mins ), GLM4READ( maxs ), entityList, MAX_GENTITIES );
 
 	for ( i = 0; i < num; i++ )
 	{
@@ -148,9 +149,7 @@ G_ClientListForTeam
 static clientList_t G_ClientListForTeam( team_t team )
 {
 	int          i;
-	clientList_t clientList;
-
-	memset( &clientList, 0, sizeof( clientList_t ) );
+	clientList_t clientList{};
 
 	for ( i = 0; i < level.maxclients; i++ )
 	{
@@ -183,8 +182,8 @@ void G_UpdateTeamConfigStrings()
 	if ( level.intermissiontime )
 	{
 		// No restrictions once the game has ended
-		memset( &alienTeam, 0, sizeof( clientList_t ) );
-		memset( &humanTeam, 0, sizeof( clientList_t ) );
+		alienTeam = {};
+		humanTeam = {};
 	}
 
 	trap_SetConfigstringRestrictions( CS_VOTE_TIME + TEAM_ALIENS,   &humanTeam );
@@ -281,6 +280,25 @@ void G_ChangeTeam( gentity_t *ent, team_t newTeam )
 
 	if ( oldTeam == newTeam )
 	{
+		return;
+	}
+
+	if ( ent->client->pers.connected != CON_CONNECTED )
+	{
+		// This can happen with /restart ktl (or admin putteam maybe?).
+		// We shouldn't call ClientSpawn if it hasn't entered the game.
+
+		ent->client->pers.team = newTeam;
+
+		// userinfo configstrings
+		ClientUserinfoChanged( ent->client->ps.clientNum, false );
+
+		// configstring restrictions
+		G_UpdateTeamConfigStrings();
+
+		// Prevent the team from getting stomped on by G_namelog_restore later
+		G_namelog_update_score( ent->client );
+
 		return;
 	}
 

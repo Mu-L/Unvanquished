@@ -73,6 +73,7 @@ set(GAMESHAREDLIST
     ${GAMELOGIC_DIR}/shared/bg_teamprogress.cpp
     ${GAMELOGIC_DIR}/shared/bg_utilities.cpp
     ${GAMELOGIC_DIR}/shared/bg_voice.cpp
+    ${GAMELOGIC_DIR}/shared/bg_lua.cpp
     ${GAMELOGIC_DIR}/shared/bot_nav_shared.cpp
     ${GAMELOGIC_DIR}/shared/bot_nav_shared.h
     ${GAMELOGIC_DIR}/shared/parse.cpp
@@ -82,6 +83,23 @@ set(GAMESHAREDLIST
     ${GAMELOGIC_DIR}/shared/navgen/brush.cpp
     ${GAMELOGIC_DIR}/shared/navgen/nav.cpp
     ${GAMELOGIC_DIR}/shared/navgen/navgen.h
+
+    ${GAMELOGIC_DIR}/shared/lua/register_lua_extensions.h
+    ${GAMELOGIC_DIR}/shared/lua/Utils.h
+    ${GAMELOGIC_DIR}/shared/lua/Utils.cpp
+    ${GAMELOGIC_DIR}/shared/lua/LuaLib.h
+    ${GAMELOGIC_DIR}/shared/lua/LuaLib.inl
+    ${GAMELOGIC_DIR}/shared/lua/Weapons.h
+    ${GAMELOGIC_DIR}/shared/lua/Weapons.cpp
+    ${GAMELOGIC_DIR}/shared/lua/Buildables.h
+    ${GAMELOGIC_DIR}/shared/lua/Buildables.cpp
+    ${GAMELOGIC_DIR}/shared/lua/Classes.h
+    ${GAMELOGIC_DIR}/shared/lua/Classes.cpp
+    ${GAMELOGIC_DIR}/shared/lua/Upgrades.h
+    ${GAMELOGIC_DIR}/shared/lua/Upgrades.cpp
+    ${GAMELOGIC_DIR}/shared/lua/Timer.cpp
+    ${GAMELOGIC_DIR}/shared/lua/Cmd.cpp
+    ${GAMELOGIC_DIR}/shared/lua/Cvar.cpp
 )
 
 set(CGAMELIST
@@ -159,12 +177,10 @@ set(CGAMELIST
     ${GAMELOGIC_DIR}/cgame/rocket/rocket_events.cpp
     ${GAMELOGIC_DIR}/cgame/rocket/rocket_hud.cpp
     ${GAMELOGIC_DIR}/cgame/rocket/rocket_keys.cpp
-    ${GAMELOGIC_DIR}/cgame/rocket/lua/CDataSource.cpp
-    ${GAMELOGIC_DIR}/cgame/rocket/lua/Cmd.cpp
-    ${GAMELOGIC_DIR}/cgame/rocket/lua/Cvar.cpp
-    ${GAMELOGIC_DIR}/cgame/rocket/lua/Events.cpp
-    ${GAMELOGIC_DIR}/cgame/rocket/lua/Timer.cpp
     ${GAMELOGIC_DIR}/cgame/rocket/lua/register_lua_extensions.h
+    ${GAMELOGIC_DIR}/cgame/rocket/lua/CDataSource.cpp
+    ${GAMELOGIC_DIR}/cgame/rocket/lua/Events.cpp
+    ${GAMELOGIC_DIR}/cgame/rocket/lua/Player.cpp
 
     ${ENGINE_DIR}/client/cg_api.h
     ${ENGINE_DIR}/client/cg_msgdef.h
@@ -277,6 +293,8 @@ set(SGAMELIST
     ${GAMELOGIC_DIR}/sgame/components/HealthComponent.h
     ${GAMELOGIC_DIR}/sgame/components/HiveComponent.cpp
     ${GAMELOGIC_DIR}/sgame/components/HiveComponent.h
+    ${GAMELOGIC_DIR}/sgame/components/HiveMissileComponent.cpp
+    ${GAMELOGIC_DIR}/sgame/components/HiveMissileComponent.h
     ${GAMELOGIC_DIR}/sgame/components/HumanBuildableComponent.cpp
     ${GAMELOGIC_DIR}/sgame/components/HumanBuildableComponent.h
     ${GAMELOGIC_DIR}/sgame/components/HumanClassComponent.cpp
@@ -295,10 +313,14 @@ set(SGAMELIST
     ${GAMELOGIC_DIR}/sgame/components/MGTurretComponent.h
     ${GAMELOGIC_DIR}/sgame/components/MiningComponent.cpp
     ${GAMELOGIC_DIR}/sgame/components/MiningComponent.h
+    ${GAMELOGIC_DIR}/sgame/components/MissileComponent.cpp
+    ${GAMELOGIC_DIR}/sgame/components/MissileComponent.h
     ${GAMELOGIC_DIR}/sgame/components/OvermindComponent.cpp
     ${GAMELOGIC_DIR}/sgame/components/OvermindComponent.h
     ${GAMELOGIC_DIR}/sgame/components/ReactorComponent.cpp
     ${GAMELOGIC_DIR}/sgame/components/ReactorComponent.h
+    ${GAMELOGIC_DIR}/sgame/components/RocketMissileComponent.cpp
+    ${GAMELOGIC_DIR}/sgame/components/RocketMissileComponent.h
     ${GAMELOGIC_DIR}/sgame/components/RocketpodComponent.cpp
     ${GAMELOGIC_DIR}/sgame/components/RocketpodComponent.h
     ${GAMELOGIC_DIR}/sgame/components/SpawnerComponent.cpp
@@ -317,6 +339,9 @@ set(SGAMELIST
     ${GAMELOGIC_DIR}/sgame/components/TrapperComponent.h
     ${GAMELOGIC_DIR}/sgame/components/TurretComponent.cpp
     ${GAMELOGIC_DIR}/sgame/components/TurretComponent.h
+
+    ${GAMELOGIC_DIR}/sgame/lua/Interpreter.cpp
+    ${GAMELOGIC_DIR}/sgame/lua/Interpreter.h
 
     ${ENGINE_DIR}/server/sg_api.h
     ${ENGINE_DIR}/server/sg_msgdef.h

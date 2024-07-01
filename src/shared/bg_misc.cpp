@@ -26,8 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // bg_misc.c -- both games misc functions, all completely stateless
 
-#include <stddef.h>
-#include "engine/qcommon/q_shared.h"
+#include "common/Common.h"
 #include "common/FileSystem.h"
 #include "shared/CommonProxies.h"
 #include "bg_public.h"
@@ -135,7 +134,7 @@ static void BG_InitBuildableAttributes()
 		ba = &bg_buildableList[i];
 
 		//Initialise default values for buildables
-		memset( ba, 0, sizeof( buildableAttributes_t ) );
+		*ba = {};
 
 		ba->number = bh->number;
 		ba->name = bh->name;
@@ -201,7 +200,7 @@ static void BG_InitBuildableModelConfigs()
 	for ( i = BA_NONE + 1; i < BA_NUM_BUILDABLES; i++ )
 	{
 		bc = BG_BuildableModelConfig( i );
-		memset( bc, 0, sizeof( buildableModelConfig_t ) );
+		*bc = {};
 
 		BG_ParseBuildableModelFile( va( "configs/buildables/%s.model.cfg",
 		                           BG_Buildable( i )->name ), bc );
@@ -621,7 +620,7 @@ static void BG_InitWeaponAttributes()
 		wd = &bg_weaponsData[i];
 		wa = &bg_weapons[i];
 
-		memset( wa, 0, sizeof( weaponAttributes_t ) );
+		*wa = {};
 
 		wa->number = wd->number;
 		wa->name   = wd->name;
@@ -710,7 +709,7 @@ static void BG_InitUpgradeAttributes()
 		ua = &bg_upgrades[i];
 
 		//Initialise default values for buildables
-		memset( ua, 0, sizeof( upgradeAttributes_t ) );
+		*ua = {};
 
 		ua->number = ud->number;
 		ua->name = ud->name;
@@ -799,7 +798,7 @@ static void BG_InitMissileAttributes()
 		md = &bg_missilesData[i];
 		ma = &bg_missiles[i];
 
-		memset( ma, 0, sizeof( missileAttributes_t ) );
+		*ma = {};
 
 		ma->name   = md->name;
 		ma->number = md->number;
@@ -961,7 +960,7 @@ static void BG_InitBeaconAttributes()
 		bd = bg_beaconsData + i;
 		ba = bg_beacons + i;
 
-		memset( ba, 0, sizeof( beaconAttributes_t ) );
+		*ba = {};
 
 		ba->number = bd->number;
 		ba->name = bd->name;
@@ -2552,31 +2551,6 @@ char *Substring( const char *in, int start, int count )
 
 	return buf;
 }
-
-/*
-=================
-BG_strdup
-=================
-*/
-
-char *BG_strdup( const char *string )
-{
-	size_t length;
-	char *copy;
-
-	length = strlen(string) + 1;
-	copy = (char *)malloc(length);
-
-	if ( copy == nullptr )
-	{
-		return nullptr;
-	}
-
-	memcpy( copy, string, length );
-	return copy;
-}
-
-
 
 /*
 =================

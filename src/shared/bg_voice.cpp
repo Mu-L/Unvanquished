@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 // bg_voice.c -- both games voice functions
+#include "common/Common.h"
 #include "common/FileSystem.h"
-#include "engine/qcommon/q_shared.h"
 #include "shared/parse.h"
 #include "bg_public.h"
 
@@ -309,8 +309,7 @@ static bool BG_VoiceParseTrack( int handle, voiceTrack_t *voiceTrack )
 				                                token.string ) );
 			}
 
-			voiceTrack->text = ( char * ) BG_Alloc( tokenLen + 1 );
-			Q_strncpyz( voiceTrack->text, token.string, tokenLen + 1 );
+			voiceTrack->text = BG_strdup( token.string );
 			foundToken = Parse_ReadTokenHandle( handle, &token );
 			continue;
 		}

@@ -25,6 +25,8 @@ along with Unvanquished Source Code.  If not, see <http://www.gnu.org/licenses/>
 #ifndef SG_PUBLIC_H_
 #define SG_PUBLIC_H_
 
+struct trace2_t;
+
 // sg_active.c
 void              G_UnlaggedStore();
 void              G_UnlaggedClear( gentity_t *ent );
@@ -44,25 +46,21 @@ const char        *G_quoted_admin_name( gentity_t *ent );
 namespace Beacon
 {
 	void Frame();
-	void Move( gentity_t *ent, const vec3_t origin );
-	gentity_t *New( const vec3_t origin, beaconType_t type, int data, team_t team,
-	                int owner = ENTITYNUM_NONE,
-	                beaconConflictHandler_t conflictHandler = BCH_NONE );
-	gentity_t *NewArea( beaconType_t type, const vec3_t point, team_t team );
+	void Move( gentity_t *ent, glm::vec3 const& origin );
+	gentity_t *New( glm::vec3 const& origin, beaconType_t type, int data, team_t team,
+		int owner = ENTITYNUM_NONE,
+		beaconConflictHandler_t conflictHandler = BCH_NONE );
+	gentity_t *NewArea( beaconType_t type, glm::vec3 const& point, team_t team );
 	void Delete( gentity_t *ent, bool verbose = false );
-	void MoveTowardsRoom( vec3_t origin );
-	gentity_t *FindSimilar( const vec3_t origin, beaconType_t type, int data, int team, int owner,
-	                        float radius = 128.0f, int eFlags = 0, int eFlagsRelevant = 0 );
-	int RemoveSimilar( const vec3_t origin, beaconType_t type, int data, int team, int owner,
-	                   float radius = 128.0f, int eFlags = 0, int eFlagsRelevant = 0 );
-	gentity_t *MoveSimilar( const vec3_t from, const vec3_t to, beaconType_t type, int data,
-	                        int team, int owner, float radius = 128.0f, int eFlags = 0,
-	                        int eFlagsRelevant = 0 );
+	glm::vec3 MoveTowardsRoom( glm::vec3 const& origin );
+	gentity_t *MoveSimilar( glm::vec3 const& from, glm::vec3 const& to, beaconType_t type, int data,
+		int team, int owner, float radius = 128.0f, int eFlags = 0,
+		int eFlagsRelevant = 0 );
 	void Propagate( gentity_t *ent );
 	void PropagateAll();
 	void RemoveOrphaned( int clientNum );
 	bool EntityTaggable( int num, team_t team, bool trace );
-	gentity_t *TagTrace( const vec3_t begin, const vec3_t end, int skip, int mask, team_t team, bool refreshTagged );
+	gentity_t *TagTrace( glm::vec3 const& begin, glm::vec3 const& end, int skip, int mask, team_t team, bool refreshTagged );
 	void Tag( gentity_t *ent, team_t team, bool permanent );
 	void Tag( gentity_t *ent, team_t team, bool permanent, int scoreDelta );
 	void UpdateTags( gentity_t *ent );
@@ -80,7 +78,7 @@ gentity_t         *G_MainBuildable(team_t team);
 gentity_t         *G_ActiveMainBuildable(team_t team);
 float             G_DistanceToBase(gentity_t *self);
 bool              G_InsideBase(gentity_t *self);
-bool              G_DretchCanDamageEntity( const gentity_t *self, const gentity_t *other );
+bool              G_DretchCanDamageEntity( const gentity_t *ent );
 gentity_t         *G_Build( gentity_t *builder, buildable_t buildable, const vec3_t origin, const vec3_t normal, const vec3_t angles, int groundEntityNum );
 bool              G_BuildableInRange( vec3_t origin, float radius, buildable_t buildable );
 gentity_t         *G_GetDeconstructibleBuildable( gentity_t *ent );
@@ -135,7 +133,7 @@ bool          SpotWouldTelefrag( gentity_t *spot );
 bool          G_IsUnnamed( const char *name );
 void              G_ClientCleanName( const char *in, char *out, size_t outSize, gclient_t *client );
 const char        *ClientConnect( int clientNum, bool firstTime );
-const char        *ClientBotConnect( int clientNum, bool firstTime, team_t team );
+const char        *ClientBotConnect( int clientNum, bool firstTime );
 const char        *ClientUserinfoChanged( int clientNum, bool forceName );
 void              ClientDisconnect( int clientNum );
 void              ClientBegin( int clientNum );
@@ -246,9 +244,10 @@ void              G_ShutdownMapRotations();
 bool          G_MapExists( const char *name );
 
 // sg_missile.c
-void              G_ExplodeMissile( gentity_t *ent );
-void              G_RunMissile( gentity_t *ent );
-gentity_t         *G_SpawnMissile( missile_t missile, gentity_t *parent, const vec3_t start, const vec3_t dir, gentity_t *target, void ( *think )( gentity_t *self ), int nextthink );
+float G_MissileTimeSplashDmgMod( gentity_t *self );
+bool G_MissileImpact( gentity_t *ent, const trace2_t *trace );
+void G_SetUpMissile( gentity_t *m, gentity_t *parent, const vec3_t start, const vec3_t dir );
+gentity_t *G_SpawnDumbMissile( missile_t missile, gentity_t *parent, const glm::vec3 &start, const glm::vec3 &dir );
 gentity_t         *G_SpawnFire( const vec3_t origin, const vec3_t normal, gentity_t *fireStarter );
 
 // sg_namelog.c
@@ -264,7 +263,7 @@ void              G_Physics( gentity_t *ent );
 
 // sg_session.c
 void              G_ReadSessionData( gclient_t *client );
-void              G_InitSessionData( gclient_t *client, const char *userinfo );
+void              G_InitSessionData( gclient_t *client );
 void              G_WriteSessionData();
 
 // sg_svcmds.c
@@ -298,7 +297,7 @@ int               G_ReverbEffectIndex( const char *name );
 int               G_LocationIndex( const char *name );
 void              G_KillBox( gentity_t *ent );
 void              G_KillBrushModel( gentity_t *ent, gentity_t *activator );
-void              G_TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, float speed );
+void              G_TeleportPlayer( gentity_t *player, const glm::vec3 &origin, const glm::vec3 &angles, float speed );
 void              G_Sound( gentity_t *ent, soundChannel_t channel, int soundIndex );
 char              *vtos( const vec3_t v );
 void              G_AddPredictableEvent( gentity_t *ent, int event, int eventParm );
@@ -315,14 +314,13 @@ void              G_TeamToClientmask( team_t team, int *loMask, int *hiMask );
 bool          G_LineOfSight( const gentity_t *from, const gentity_t *to, int mask, bool useTrajBase );
 bool          G_LineOfSight( const gentity_t *from, const gentity_t *to );
 bool          G_LineOfFire( const gentity_t *from, const gentity_t *to );
-bool          G_LineOfSight( const vec3_t point1, const vec3_t point2 );
 bool              G_IsPlayableTeam( team_t team );
 bool              G_IsPlayableTeam( int team );
 team_t            G_IterateTeams( team_t team );
 std::string G_EscapeServerCommandArg( Str::StringRef str );
 char *Quote( Str::StringRef str );
 float             G_Distance( gentity_t *ent1, gentity_t *ent2 );
-float G_DistanceToBBox( const vec3_t origin, gentity_t* ent );
+float G_DistanceToBBox( const glm::vec3 &origin, gentity_t* ent );
 int BG_FOpenGameOrPakPath( Str::StringRef filename, fileHandle_t &handle );
 bool G_IsOnFire( const gentity_t *ent );
 
@@ -346,6 +344,7 @@ void              G_UpdateZaps( int msec );
 void              G_ClearPlayerZapEffects( gentity_t *player );
 void              G_FireWeapon( gentity_t *self, weapon_t weapon, weaponMode_t weaponMode );
 void              G_FireUpgrade( gentity_t *self, upgrade_t upgrade );
+void G_FirebombMissileIgnite( gentity_t *self );
 
 // CombatFeedback.cpp
 namespace CombatFeedback

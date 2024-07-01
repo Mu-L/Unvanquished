@@ -32,6 +32,7 @@ Maryland 20850 USA.
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "sg_spawn.h"
 #include "Entities.h"
@@ -1546,7 +1547,7 @@ static void func_door_block( gentity_t *self, gentity_t *other )
 Touch_DoorTrigger
 ================
 */
-static void door_trigger_touch( gentity_t *self, gentity_t *other, trace_t* )
+static void door_trigger_touch( gentity_t *self, gentity_t *other )
 {
 	moverState_t groupState;
 
@@ -1620,7 +1621,7 @@ static void Think_SpawnNewDoorTrigger( gentity_t *self )
 	other->r.contents = CONTENTS_TRIGGER;
 	other->touch = door_trigger_touch;
 	// remember the thinnest axis
-	other->customNumber = best;
+	other->mapEntity.customNumber = best;
 	trap_LinkEntity( other );
 
 	if ( self->mapEntity.moverState < MODEL_POS1 )
@@ -1706,8 +1707,8 @@ void SP_func_door( gentity_t *self )
 	glm::vec3 angles = VEC2GLM( self->s.angles );
 	glm::vec3 movedir = VEC2GLM( self->mapEntity.movedir );
 	G_SetMovedir( angles, movedir );
-	VectorCopy( &angles[0], self->s.angles );
-	VectorCopy( &movedir[0], self->mapEntity.movedir );
+	VectorCopy( angles, self->s.angles );
+	VectorCopy( movedir, self->mapEntity.movedir );
 
 	abs_movedir[ 0 ] = fabs( self->mapEntity.movedir[ 0 ] );
 	abs_movedir[ 1 ] = fabs( self->mapEntity.movedir[ 1 ] );
@@ -2042,7 +2043,7 @@ Touch_Plat
 Don't allow to descend if a live player is on it
 ===============
 */
-static void Touch_Plat( gentity_t *ent, gentity_t *other, trace_t* )
+static void Touch_Plat( gentity_t *ent, gentity_t *other )
 {
 	// DONT_WAIT
 	if ( ent->mapEntity.spawnflags & 1 )
@@ -2069,7 +2070,7 @@ Touch_PlatCenterTrigger
 If the plat is at the bottom position, start it going up
 ===============
 */
-static void Touch_PlatCenterTrigger( gentity_t *ent, gentity_t *other, trace_t* )
+static void Touch_PlatCenterTrigger( gentity_t *ent, gentity_t *other )
 {
 	if ( !other->client )
 	{
@@ -2201,7 +2202,7 @@ BUTTON
 ===============================================================================
 */
 
-static void Touch_Button( gentity_t *ent, gentity_t *other, trace_t* )
+static void Touch_Button( gentity_t *ent, gentity_t *other )
 {
 	if ( !other->client )
 	{
@@ -2259,8 +2260,8 @@ void SP_func_button( gentity_t *self )
 	glm::vec3 angles = VEC2GLM( self->s.angles );
 	glm::vec3 movedir = VEC2GLM( self->mapEntity.movedir );
 	G_SetMovedir( angles, movedir );
-	VectorCopy( &angles[0], self->s.angles );
-	VectorCopy( &movedir[0], self->mapEntity.movedir );
+	VectorCopy( angles, self->s.angles );
+	VectorCopy( movedir, self->mapEntity.movedir );
 
 	abs_movedir[ 0 ] = fabs( self->mapEntity.movedir[ 0 ] );
 	abs_movedir[ 1 ] = fabs( self->mapEntity.movedir[ 1 ] );

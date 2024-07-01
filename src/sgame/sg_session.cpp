@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "sg_local.h"
 
 /*
@@ -48,19 +49,12 @@ static void G_WriteClientSessionData( int clientNum )
 	const char *s;
 	const char *var;
 	gclient_t  *client = &level.clients[ clientNum ];
-	const char *behavior = G_BotGetBehavior( clientNum );
-	if ( behavior == nullptr )
-	{
-		behavior = "default";
-	}
 
-	s = va( "%i %i %i %i %i %s %s",
+	s = va( "%i %i %i %i %s",
 		client->sess.spectatorState,
 		client->sess.spectatorClient,
 		client->sess.restartTeam,
 		client->sess.seenWelcome,
-		G_BotGetSkill( clientNum ),
-		behavior,
 		Com_ClientListString( &client->sess.ignoreList )
 	);
 
@@ -78,31 +72,27 @@ Called on a reconnect
 */
 void G_ReadSessionData( gclient_t *client )
 {
-	char       s[ MAX_STRING_CHARS ];
-	const char *var;
 	int        spectatorState;
 	int        restartTeam;
-	int        botSkill;
-	char       botTree[ MAX_QPATH ];
 	char       ignorelist[ 17 ];
 
-	var = va( "session%i", client->num() );
-	trap_Cvar_VariableStringBuffer( var, s, sizeof( s ) );
+	std::string var = Str::Format( "session%i", client->num() );
+	std::string data = Cvar::GetValue( var );
 
-	sscanf( s, "%i %i %i %i %i %63s %16s",
+	if ( sscanf( data.c_str(), "%i %i %i %i %16s %*c",
 	        &spectatorState,
 	        &client->sess.spectatorClient,
 	        &restartTeam,
 	        &client->sess.seenWelcome,
-	        &botSkill,
-	        botTree,
 	        ignorelist
-	      );
+	     ) != 5 )
+	{
+		Log::Warn( "bad data in cvar %s", var );
+		return;
+	}
 
 	client->sess.spectatorState = ( spectatorState_t ) spectatorState;
 	client->sess.restartTeam = ( team_t ) restartTeam;
-	client->sess.botSkill = botSkill;
-	Q_strncpyz( client->sess.botTree, botTree, sizeof( client->sess.botTree ) );
 	Com_ClientListParse( &client->sess.ignoreList, ignorelist );
 }
 
@@ -113,17 +103,15 @@ G_InitSessionData
 Called on a first-time connect
 ================
 */
-void G_InitSessionData( gclient_t *client, const char *userinfo )
+void G_InitSessionData( gclient_t *client )
 {
 	clientSession_t *sess = &client->sess;
 
 	sess->restartTeam = TEAM_NONE;
 	sess->spectatorState = SPECTATOR_FREE;
 	sess->spectatorClient = -1;
-	sess->botSkill = 0;
-	sess->botTree[ 0 ] = '\0';
 
-	memset( &sess->ignoreList, 0, sizeof( sess->ignoreList ) );
+	sess->ignoreList = {};
 	sess->seenWelcome = 0;
 
 	G_WriteClientSessionData( client->num() );
@@ -144,7 +132,8 @@ void G_WriteSessionData()
 
 	for ( i = 0; i < level.maxclients; i++ )
 	{
-		if ( level.clients[ i ].pers.connected == CON_CONNECTED )
+		if ( level.clients[ i ].pers.connected == CON_CONNECTED &&
+		     !( g_entities[ i ].r.svFlags & SVF_BOT ) )
 		{
 			G_WriteClientSessionData( i );
 		}

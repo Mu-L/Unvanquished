@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "cg_local.h"
 
 #define MINIMAP_MAP_DISPLAY_SIZE 1024.0f
@@ -272,7 +273,7 @@ static void CG_SetupMinimapTransform( const rectDef_t *rect, const minimap_t* mi
     //The refdefview angle is the angle from the x axis
     //the 90 gets it back to the Y axis (we want the view to point up)
     //and the orientation change gives the -
-    transformAngle = - cg.refdefViewAngles[1];
+    transformAngle = cg_minimapRotate.Get() ? - cg.refdefViewAngles[1] : 0.f;
     angle = DEG2RAD(transformAngle + 90.0);
 
     //Try to show the same region of the map for everyone
@@ -535,32 +536,20 @@ CG_MinimapDrawBeacon
 */
 static void CG_MinimapDrawBeacon( const cbeacon_t *b, float size, const vec2_t center, const vec2_t *bounds )
 {
-	vec2_t offset, pos2d, dir;
-	bool clamped;
+	vec2_t offset;
 
 	size *= b->scale;
 
 	CG_WorldToMinimap( b->origin, offset );
+	glm::vec2 pos2d;
 	pos2d[ 0 ] = - size/2 + offset[ 0 ];
 	pos2d[ 1 ] = - size/2 + offset[ 1 ];
 
-	if( pos2d[ 0 ] < bounds[ 0 ][ 0 ] ||
-	    pos2d[ 0 ] > bounds[ 1 ][ 0 ] ||
-	    pos2d[ 1 ] < bounds[ 0 ][ 1 ] ||
-	    pos2d[ 1 ] > bounds[ 1 ][ 1 ] )
-	{
-		clamped = true;
+	bool clamped = CG_ClampToRectangleAlongLine(
+		VEC2GLM2( bounds[ 0 ] ), VEC2GLM2( bounds[ 1 ] ), VEC2GLM2( center ), true, pos2d );
 
-		if( b->type == BCT_TAG )
-			return;
-
-		Vector2Subtract( pos2d, center, dir );
-		ProjectPointOntoRectangleOutwards( pos2d, center, dir, bounds );
-	}
-	else
-	{
-		clamped = false;
-	}
+	if ( clamped && b->type == BCT_TAG )
+		return;
 
 	Color::Color color = b->color;
 	color.SetAlpha( cgs.bc.minimapAlpha );
@@ -574,12 +563,15 @@ static void CG_MinimapDrawBeacon( const cbeacon_t *b, float size, const vec2_t c
 		                       0, 0, 1, 1,
 		                       cgs.media.beaconNoTarget );
 	if( clamped )
+	{
+		glm::vec2 dir = pos2d - VEC2GLM2( center );
 		trap_R_DrawRotatedPic( pos2d[ 0 ] - size * 0.25f,
 		                       pos2d[ 1 ] - size * 0.25f,
 		                       size * 1.5, size * 1.5f,
 		                       0.0f, 0.0f, 1.0f, 1.0f,
 		                       cgs.media.beaconIconArrow,
 		                       270.0f - atan2f( dir[ 1 ], dir[ 0 ] ) * 180 / M_PI );
+	}
 }
 
 /*

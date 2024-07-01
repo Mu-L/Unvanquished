@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // cg_drawtools.c -- helper functions called by cg_draw, cg_scoreboard, cg_info, etc
 
+#include "common/Common.h"
 #include "cg_local.h"
 
 /*
@@ -410,7 +411,7 @@ float CG_FadeAlpha( int startMsec, int totalMsec )
 CG_WorldToScreen
 ================
 */
-bool CG_WorldToScreen( vec3_t point, float *x, float *y )
+bool CG_WorldToScreen( const vec3_t point, float *x, float *y )
 {
 	vec3_t trans;
 	float  xc, yc;
@@ -435,12 +436,12 @@ bool CG_WorldToScreen( vec3_t point, float *x, float *y )
 
 	if ( x )
 	{
-		*x = 320.0f - DotProduct( trans, cg.refdef.viewaxis[ 1 ] ) * xc / ( z * px );
+		*x = !z ? -999999 : 320.0f - DotProduct( trans, cg.refdef.viewaxis[ 1 ] ) * xc / ( z * px );
 	}
 
 	if ( y )
 	{
-		*y = 240.0f - DotProduct( trans, cg.refdef.viewaxis[ 2 ] ) * yc / ( z * py );
+		*y = !z ? -999999 : 240.0f - DotProduct( trans, cg.refdef.viewaxis[ 2 ] ) * yc / ( z * py );
 	}
 
 	return front;

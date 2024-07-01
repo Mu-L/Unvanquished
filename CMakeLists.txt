@@ -82,7 +82,7 @@ include(src.cmake)
 option(BUILD_CGAME "Build client-side gamelogic" 1)
 option(BUILD_SGAME "Build server-side gamelogic" 1)
 
-if (BUILD_CGAME AND (BUILD_GAME_NATIVE_DLL OR BUILD_GAME_NATIVE_EXE OR NACL))
+if (BUILD_GAME_NATIVE_DLL OR BUILD_GAME_NATIVE_EXE OR NACL)
     if (NACL)
         set(FREETYPE_LIBRARY ${DEPS_DIR}/pnacl_deps/lib/libfreetype.a)
         set(FREETYPE_LIBRARIES ${FREETYPE_LIBRARY} ${DEPS_DIR}/pnacl_deps/lib/libpng16.a)
@@ -144,20 +144,29 @@ set_target_properties(srclibs-tinygettext PROPERTIES POSITION_INDEPENDENT_CODE 1
 target_include_directories(srclibs-tinygettext PUBLIC ${LIB_DIR}/tinygettext/include)
 target_compile_definitions(srclibs-tinygettext PUBLIC TINYGETTEXT_UTF8_ONLY)
 
-# Warning options
+# Warning options for Unvanquished source code
 # keep
-try_flag(WARNINGS           "/wd4068")
 try_flag(WARNINGS           "-Wno-pragmas")
 try_flag(WARNINGS           "-Wno-unknown-pragmas")
 try_flag(WARNINGS           "-W${WARNMODE}old-style-cast")
 try_flag(WARNINGS           "-Woverloaded-virtual")
 try_flag(WARNINGS           "-Wstrict-null-sentinel")
 
-# remove
-try_flag(WARNINGS           "-W${WARNMODE}unused-parameter")
-try_flag(WARNINGS           "-Wno-maybe-uninitialized")
+# Since OSX uses newer compilers, they complain about some of header only libs.
+# So, ignore deprecation warnings on OSX.
+if (APPLE)
+    # Do not error for GLM vsprintf deprecation warnings.
+    try_flag(WARNINGS "-Wno-error=deprecated-declarations")
+endif()
 
-try_flag(WARNINGS "/wd26812") # "The enum 'XXX' is unscoped. Prefer 'enum class' over 'enum'"
+
+# remove
+try_flag(WARNINGS           "-Wno-maybe-uninitialized")
+try_flag(WARNINGS "/wd4127")  # conditional expression is constant
+try_flag(WARNINGS "/wd4458")  # declaration of 'XXX' hides class member
+try_flag(WARNINGS "/wd4459")  # declaration of 'XXX' hides global declaration
+try_flag(WARNINGS "/wd4701")  # potentially uninitialized local variable 'XXX' used
+try_flag(WARNINGS "/wd26812") # The enum 'XXX' is unscoped. Prefer 'enum class' over 'enum'
 
 if (BUILD_SGAME)
     include(tools/cbse/CBSE.cmake)
@@ -173,6 +182,7 @@ if (BUILD_SGAME)
             ${SGAMELIST}
             ${sgame_GENERATED_CBSE}
         LIBS
+            ${LUA_LIBRARY}
             srclibs-detour
             srclibs-recast
             srclibs-fastlz

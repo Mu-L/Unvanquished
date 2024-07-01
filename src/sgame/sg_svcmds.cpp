@@ -37,6 +37,7 @@ Maryland 20850 USA.
 // For administrator commands (performed by console *or* remote clients), see sg_admin.cpp.
 // TODO: Convert all these commands to Cmd::StaticCmd (which works for these, but not networked commands)
 
+#include "common/Common.h"
 #include "sg_local.h"
 #include "botlib/bot_api.h"
 
@@ -99,7 +100,7 @@ static void Svcmd_EntityFire_f()
 
 	if ( entityNum >= level.num_entities || entityNum < MAX_CLIENTS )
 	{
-		Log::Notice( "invalid entityId %d", entityNum );
+		Log::Notice( "invalid entityNum %d", entityNum );
 		return;
 	}
 
@@ -154,7 +155,7 @@ static void Svcmd_EntityShow_f()
 
 	if (trap_Argc() != 2)
 	{
-		Log::Notice("usage: entityShow <entityId>");
+		Log::Notice("usage: entityShow <entityNum>");
 		return;
 	}
 
@@ -163,7 +164,7 @@ static void Svcmd_EntityShow_f()
 
 	if (entityNum >= level.num_entities || entityNum < MAX_CLIENTS)
 	{
-		Log::Notice("entityId %d is out of range", entityNum);
+		Log::Notice("entityNum %d is out of range", entityNum);
 		return;
 	}
 

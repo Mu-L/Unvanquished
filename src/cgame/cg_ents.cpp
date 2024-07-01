@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // cg_ents.c -- present snapshot entities, happens every single frame
 
+#include "common/Common.h"
 #include "cg_local.h"
 
 /* It is dynamically adjusted in CG_AddPacketEntities() to avoid looping
@@ -1386,12 +1387,12 @@ void CG_AddPacketEntities()
 	//make an attempt at drawing bounding boxes of selected entity types
 	if ( cg_drawBBOX.Get() > 0 )
 	{
-		for ( unsigned num = 0; num < cg.snap->entities.size(); num++ )
+		for ( const auto &ent : cg.snap->entities )
 		{
 			vec3_t        mins, maxs;
 			entityState_t *es;
 
-			centity_t *cent = &cg_entities[ cg.snap->entities[ num ].number ];
+			centity_t *cent = &cg_entities[ ent.number ];
 			es = &cent->currentState;
 
 			switch ( es->eType )

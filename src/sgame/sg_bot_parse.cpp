@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
+#include "common/Common.h"
 #include "shared/parse.h"
 #include "sg_bot_parse.h"
 #include "sg_bot_util.h"
@@ -292,12 +293,12 @@ static AIValue_t botCanEvolveTo( gentity_t *self, const AIValue_t *params )
 {
 	class_t c = ( class_t ) AIUnBoxInt( params[ 0 ] );
 
-	return AIBoxInt( BotCanEvolveToClass( self, c ) &&
+	return AIBoxInt( BotIsClassAvailable( c ) &&
 		G_AlienEvolve( self, c, false, /* dryRun = */ true ) );
 }
 
 // Returns a team's momentum for use in behavior trees.
-static AIValue_t momentum( gentity_t* self, const AIValue_t *params )
+static AIValue_t momentum( gentity_t *, const AIValue_t *params )
 {
 	int requestedTeam = AIUnBoxInt( params[ 0 ] ); //is really a team_t
 	if( !G_IsPlayableTeam( requestedTeam ) )
@@ -436,12 +437,13 @@ static AIValue_t numUsersInTeam( gentity_t *self, const AIValue_t* )
 	return AIBoxInt( level.team[ G_Team( self ) ].numPlayers );
 }
 
+// Resets to 0 when bot spawns
 static AIValue_t myTimer( gentity_t *self, const AIValue_t* )
 {
 	return AIBoxInt( level.time - self->botMind->myTimer );
 }
 
-static AIValue_t levelTime( gentity_t *self, const AIValue_t* )
+static AIValue_t levelTime( gentity_t *, const AIValue_t* )
 {
 	return AIBoxInt( level.matchTime );
 }
@@ -633,7 +635,7 @@ static AIValue_t *newValueLiteral( pc_token_list **list )
 	pc_token_list *current = *list;
 	pc_token_stripped_t *token = &current->token;
 
-	ret = ( AIValue_t * ) BG_Alloc( sizeof( *ret ) );
+	ret = ( AIValue_t * ) BG_Malloc( sizeof( *ret ) );
 
 	*ret = AIBoxToken( token );
 
@@ -732,12 +734,11 @@ static AIValue_t *parseFunctionParameters( pc_token_list **list, int *nparams, i
 static AIValueFunc_t *newValueFunc( pc_token_list **list )
 {
 	AIValueFunc_t *ret = nullptr;
-	AIValueFunc_t v;
 	pc_token_list *current = *list;
 	pc_token_list *parenBegin = nullptr;
 	struct AIConditionMap_s *f;
 
-	memset( &v, 0, sizeof( v ) );
+	AIValueFunc_t v{};
 
 	f = (struct AIConditionMap_s*) bsearch( current->token.string, conditionFuncs, ARRAY_LEN( conditionFuncs ), sizeof( *conditionFuncs ), cmdcmp );
 
@@ -758,7 +759,7 @@ static AIValueFunc_t *newValueFunc( pc_token_list **list )
 	if ( v.nparams == 0 && parenBegin->token.string[ 0 ] != '(' )
 	{
 		ret = ( AIValueFunc_t * ) BG_Alloc( sizeof( *ret ) );
-		memcpy( ret, &v, sizeof( *ret ) );
+		*ret = v;
 
 		*list = current->next;
 		return ret;
@@ -775,7 +776,7 @@ static AIValueFunc_t *newValueFunc( pc_token_list **list )
 	ret = ( AIValueFunc_t * ) BG_Alloc( sizeof( *ret ) );
 
 	// copy the members
-	memcpy( ret, &v, sizeof( *ret ) );
+	*ret = v;
 
 	return ret;
 }
@@ -995,7 +996,6 @@ static AIGenericNode_t *ReadDecoratorNode( pc_token_list **list )
 {
 	pc_token_list *current = *list;
 	struct AIDecoratorMap_s *dec;
-	AIDecoratorNode_t       node;
 	AIDecoratorNode_t       *ret;
 	pc_token_list           *parenBegin;
 
@@ -1022,7 +1022,7 @@ static AIGenericNode_t *ReadDecoratorNode( pc_token_list **list )
 
 	parenBegin = current->next;
 
-	memset( &node, 0, sizeof( node ) );
+	AIDecoratorNode_t node{};
 
 	BotInitNode( DECORATOR_NODE, dec->run, &node );
 
@@ -1030,7 +1030,7 @@ static AIGenericNode_t *ReadDecoratorNode( pc_token_list **list )
 	if ( dec->minparams == 0 && parenBegin->token.string[0] != '(' )
 	{
 		ret = allocNode( AIDecoratorNode_t );
-		memcpy( ret, &node, sizeof( node ) );
+		*ret = node;
 		*list = parenBegin;
 		return ( AIGenericNode_t * ) ret;
 	}
@@ -1066,7 +1066,7 @@ static AIGenericNode_t *ReadDecoratorNode( pc_token_list **list )
 
 	// create the decorator node
 	ret = allocNode( AIDecoratorNode_t );
-	memcpy( ret, &node, sizeof( *ret ) );
+	*ret = node;
 
 	*list = current;
 	return ( AIGenericNode_t * ) ret;
@@ -1169,7 +1169,7 @@ static AIGenericNode_t *ReadActionNode( pc_token_list **tokenlist )
 	if ( action->minparams == 0 && parenBegin->token.string[0] != '(' )
 	{
 		ret = allocNode( AIActionNode_t );
-		memcpy( ret, &node, sizeof( node ) );
+		*ret = node;
 		*tokenlist = parenBegin;
 		return ( AIGenericNode_t * ) ret;
 	}
@@ -1183,7 +1183,7 @@ static AIGenericNode_t *ReadActionNode( pc_token_list **tokenlist )
 
 	// create the action node
 	ret = allocNode( AIActionNode_t );
-	memcpy( ret, &node, sizeof( *ret ) );
+	*ret = node;
 
 	*tokenlist = current;
 	return ( AIGenericNode_t * ) ret;
