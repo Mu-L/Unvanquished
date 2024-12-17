@@ -203,6 +203,17 @@ static AIValue_t distanceTo( gentity_t *self, const AIValue_t *params )
 	return AIBoxFloat( ent.distance );
 }
 
+static AIValue_t distanceToSpecifiedPosition( gentity_t *self, const AIValue_t * )
+{
+	if ( !self->botMind->userSpecifiedPosition)
+	{
+		return AIBoxFloat( 1.7e19f );  // well, out of range
+	}
+	glm::vec3 pos = *self->botMind->userSpecifiedPosition;
+	glm::vec3 ownPos = VEC2GLM( self->s.origin );
+	return AIBoxFloat( glm::distance( ownPos, pos ) );
+}
+
 static AIValue_t baseRushScore( gentity_t *self, const AIValue_t* )
 {
 	return AIBoxFloat( BotGetBaseRushScore( self ) );
@@ -488,6 +499,7 @@ static const struct AIConditionMap_s
 	{ "cvar",              cvar,              1 },
 	{ "directPathTo",      directPathTo,      1 },
 	{ "distanceTo",        distanceTo,        1 },
+	{ "distanceToSpecifiedPosition", distanceToSpecifiedPosition, 0 },
 	{ "goalBuildingType",  goalBuildingType,  0 },
 	{ "goalIsDead",        goalDead,          0 },
 	{ "goalTeam",          goalTeam,          0 },
@@ -988,6 +1000,7 @@ static const struct AIDecoratorMap_s
 } AIDecorators[] =
 {
 	{ "invert", BotDecoratorInvert, 0, 0 },
+	{ "mapStatus", BotDecoratorMapStatus, 3, 3},
 	{ "return", BotDecoratorReturn, 1, 1 },
 	{ "timer", BotDecoratorTimer, 1, 1 }
 };
@@ -1086,6 +1099,7 @@ static const struct AIActionMap_s
 	{ "blackboardNoteTransient", BotActionBlackboardNoteTransient, 1, 1 },
 	{ "buildNowChosenBuildable", BotActionBuildNowChosenBuildable, 0, 0 },
 	{ "buy",               BotActionBuy,               1, 4 },
+	{ "buyPrimary",        BotActionBuyPrimary,        1, 1 },
 	{ "changeGoal",        BotActionChangeGoal,        1, 3 },
 	{ "classDodge",        BotActionClassDodge,        0, 0 },
 	{ "deactivateUpgrade", BotActionDeactivateUpgrade, 1, 1 },
@@ -1103,6 +1117,7 @@ static const struct AIActionMap_s
 	{ "moveInDir",         BotActionMoveInDir,         1, 2 },
 	{ "moveTo",            BotActionMoveTo,            1, 2 },
 	{ "moveToGoal",        BotActionMoveToGoal,        0, 0 },
+	{ "reload",            BotActionReload,            0, 0 },
 	{ "repair",            BotActionRepair,            0, 0 },
 	{ "resetMyTimer",      BotActionResetMyTimer,      0, 0 },
 	{ "resetStuckTime",    BotActionResetStuckTime,    0, 0 },
@@ -1159,6 +1174,7 @@ static AIGenericNode_t *ReadActionNode( pc_token_list **tokenlist )
 		*tokenlist = current;
 		return nullptr;
 	}
+	node.name = action->name;
 
 	parenBegin = current->next;
 
@@ -1166,7 +1182,7 @@ static AIGenericNode_t *ReadActionNode( pc_token_list **tokenlist )
 	BotInitNode( ACTION_NODE, action->run, &node );
 
 	// allow dropping of parenthesis if we don't require any parameters
-	if ( action->minparams == 0 && parenBegin->token.string[0] != '(' )
+	if ( action->minparams == 0 && parenBegin != nullptr && parenBegin->token.string[0] != '(' )
 	{
 		ret = allocNode( AIActionNode_t );
 		*ret = node;
@@ -1347,6 +1363,11 @@ static AIGenericNode_t *ReadNodeList( pc_token_list **tokenlist )
 		return nullptr;
 	}
 
+	if ( current == nullptr )
+	{
+		return nullptr;
+	}
+
 	list = allocNode( AINodeList_t );
 
 	while ( Q_stricmp( current->token.string, "}" ) )
@@ -1374,6 +1395,7 @@ static AIGenericNode_t *ReadNodeList( pc_token_list **tokenlist )
 			return nullptr;
 		}
 
+		// TODO: this does not seem right, we are still waiting for a "}" token
 		if ( !current )
 		{
 			*tokenlist = current;
@@ -1629,6 +1651,11 @@ AIBehaviorTree_t *ReadBehaviorTree( const char *name, AITreeList_t *list )
 	}
 
 	tokenlist = CreateTokenList( handle );
+	if ( tokenlist == nullptr )
+	{
+		return nullptr;
+	}
+
 	Parse_FreeSourceHandle( handle );
 
 	auto *tree = ( AIBehaviorTree_t * ) BG_Alloc( sizeof( AIBehaviorTree_t ) );
@@ -1655,12 +1682,18 @@ AIBehaviorTree_t *ReadBehaviorTree( const char *name, AITreeList_t *list )
 		node = ReadNode( &current );
 	}
 
-	if ( node )
+	if ( node && current == nullptr )
 	{
 		tree->root = node;
 	}
 	else
 	{
+		if ( node )
+		{
+			ASSERT( current != nullptr );
+			Log::Warn( "expected end of file, but found `%s` in line %d", current->token.string, current->token.line );
+			FreeNode( node );
+		}
 		auto it = std::find( list->begin(), list->end(), tree );
 		ASSERT_NQ( it, list->end() );
 		list->erase( it );
@@ -1886,4 +1919,271 @@ void FreeBehaviorTree( AIBehaviorTree_t *tree )
 	{
 		Log::Warn( "Attempted to free NULL behavior tree" );
 	}
+}
+
+
+// inverse operation of parsing: convert a behavior tree to text
+// this is only used for debug commands
+
+static void BotValueToString( AIValue_t *val, std::ostringstream &out )
+{
+	switch ( val->valType )
+	{
+	case AIValueType_t::VALUE_FLOAT:
+		out << val->l.floatValue;
+		break;
+	case AIValueType_t::VALUE_INT:
+		out << val->l.intValue;
+		break;
+	case AIValueType_t::VALUE_STRING:
+		out << "\"" << val->l.stringValue << "\"";
+		break;
+	}
+}
+
+static const char *SearchActionName( AIActionNode_t * node )
+{
+	for ( auto &action : AIActions )
+	{
+		if ( node->run == action.run )
+		{
+			return action.name;
+		}
+	}
+	return "<unknown>";
+}
+
+static const char *SearchDecoratorName( AIDecoratorNode_t * node )
+{
+	for ( auto &decorator : AIDecorators )
+	{
+		if ( node->run == decorator.run )
+		{
+			return decorator.name;
+		}
+	}
+	return "<unknown>";
+}
+
+static const char *SearchFuncName( AIValueFunc_t *exp )
+{
+	for ( auto &conditionFunc : conditionFuncs )
+	{
+		if ( exp->func == conditionFunc.func )
+		{
+			return conditionFunc.name;
+		}
+	}
+	return "<unknown>";
+}
+
+static const char *SearchSelectorName( AINodeList_t * node )
+{
+	if ( node->run == BotSelectorNode )
+	{
+		return "selector";
+	}
+	else if ( node->run == BotSequenceNode )
+	{
+		return "sequence";
+	}
+	else if ( node->run == BotFallbackNode )
+	{
+		return "fallback";
+	}
+	else if ( node->run == BotConcurrentNode )
+	{
+		return "concurrent";
+	}
+	else
+	{
+		return "<unknown>";
+	}
+}
+
+static void BotExpressionToString( AIExpType_t *exp, std::ostringstream &out );
+
+static void BotBinaryOpToString( AIBinaryOp_t *exp, std::ostringstream &out )
+{
+	for ( auto &conditionOp : conditionOps )
+	{
+		if ( exp->opType == conditionOp.opType )
+		{
+			out << "( ";
+			BotExpressionToString( exp->exp1, out );
+			out << " " << conditionOp.str << " ";
+			BotExpressionToString( exp->exp2, out );
+			out << " )";
+			return;
+		}
+	}
+	out << "<unknown>";
+}
+
+static void BotUnaryOpToString( AIUnaryOp_t *exp, std::ostringstream &out )
+{
+	// the only unary operator is boolean negation
+	out << "!( ";
+	BotExpressionToString( exp->exp, out );
+	out << " )";
+}
+
+static void BotExpressionToString( AIExpType_t *exp, std::ostringstream &out )
+{
+	switch ( *exp )
+	{
+	case AIExpType_t::EX_OP:
+		{
+			AIOp_t *op = ( AIOp_t * ) exp;
+
+			if ( isBinaryOp( op->opType ) )
+			{
+				BotBinaryOpToString( reinterpret_cast<AIBinaryOp_t *>( exp ), out);
+			}
+			else if ( isUnaryOp( op->opType ) )
+			{
+				BotUnaryOpToString( reinterpret_cast<AIUnaryOp_t *>( exp ), out);
+			}
+		}
+		break;
+	case AIExpType_t::EX_VALUE:
+		BotValueToString( reinterpret_cast<AIValue_t *>( exp ), out );
+		break;
+	case AIExpType_t::EX_FUNC:
+		{
+			AIValueFunc_t *v = reinterpret_cast<AIValueFunc_t *>( exp );
+			out << SearchFuncName( v );
+			if ( v->nparams > 0 )
+			{
+				out << "( ";
+				for ( int i = 0; i < v->nparams; i++ )
+				{
+					BotValueToString( &v->params[ i ], out );
+					if ( i < v->nparams - 1 )
+					{
+						out << ", ";
+					}
+				}
+				out << " )";
+			}
+		}
+		break;
+	default:
+		out << "<unknown>";
+		break;
+	}
+}
+
+static void BotBehaviorToStringRec( AIGenericNode_t *node, std::ostringstream &out, int level )
+{
+	std::string indent = "";
+	for ( int i = 0; i < level; i++ )
+	{
+		indent += "    ";
+	}
+
+	switch ( node->type )
+	{
+	case AINode_t::SPAWN_NODE:
+		{
+			AISpawnNode_t *nd = reinterpret_cast<AISpawnNode_t *>( node );
+			out << indent << "spawnAs " << nd->selection << "\n";
+		}
+		break;
+	case AINode_t::CONDITION_NODE:
+		{
+			AIConditionNode_t *nd = reinterpret_cast<AIConditionNode_t *>( node );
+			out << indent << "condition ";
+			BotExpressionToString( nd->exp, out );
+			if ( nd->child )
+			{
+				out << "\n" << indent << "{\n";
+				BotBehaviorToStringRec( nd->child, out, level + 1 );
+				out << indent << "}";
+			}
+			out << "\n";
+		}
+		break;
+	case AINode_t::DECORATOR_NODE:
+		{
+			AIDecoratorNode_t *nd = reinterpret_cast<AIDecoratorNode_t *>( node );
+			out << indent << "decorator " << SearchDecoratorName( nd );
+			if ( nd->nparams > 0 )
+			{
+				out << "( ";
+				for ( int i = 0; i < nd->nparams; i++ )
+				{
+					BotValueToString( &nd->params[ i ], out );
+					if ( i < nd->nparams - 1 )
+					{
+						out << ", ";
+					}
+				}
+				out << " )";
+			}
+			out << "\n" << indent << "{\n";
+			BotBehaviorToStringRec( nd->child, out, level + 1 );
+			out << indent << "}\n";
+		}
+		break;
+	case AINode_t::BEHAVIOR_NODE:
+		{
+			AIBehaviorTree_t *nd = reinterpret_cast<AIBehaviorTree_t *>( node );
+			out << indent << "behavior " << nd->name << "\n";
+		}
+		break;
+	case AINode_t::ACTION_NODE:
+		{
+			AIActionNode_t *nd = reinterpret_cast<AIActionNode_t *>( node );
+			out << indent << "action " << SearchActionName( nd );
+			if ( nd->nparams > 0 )
+			{
+				out << "( ";
+				for ( int i = 0; i < nd->nparams; i++ )
+				{
+					BotValueToString( &nd->params[ i ], out );
+					if ( i < nd->nparams - 1 )
+					{
+						out << ", ";
+					}
+				}
+				out << " )";
+			}
+			out << "\n";
+		}
+		break;
+	case AINode_t::SELECTOR_NODE:
+		{
+			AINodeList_t *nd = reinterpret_cast<AINodeList_t *>( node );
+			out << indent << SearchSelectorName( nd );
+			out << "\n" << indent << "{\n";
+			for ( int i = 0; i < nd->numNodes; i++ )
+			{
+				BotBehaviorToStringRec( nd->list[ i ], out, level + 1 );
+			}
+			out << indent << "}\n";
+		}
+		break;
+	default:
+		out << indent << "<unknown>\n";
+		break;
+	}
+}
+
+std::string G_BotBehaviorToString( Str::StringRef behavior )
+{
+	AIBehaviorTree_t *tree = BotBehaviorTree( behavior );
+	if ( tree == nullptr )
+	{
+		return "";
+	}
+	std::ostringstream out;
+	if ( tree->classSelectionTree != nullptr )
+	{
+		out << "selectClass\n{\n";
+		BotBehaviorToStringRec( tree->classSelectionTree, out, 1 );
+		out << "}\n";
+	}
+	BotBehaviorToStringRec( tree->root, out, 0 );
+	return out.str();
 }
