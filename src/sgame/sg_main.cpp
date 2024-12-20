@@ -295,7 +295,7 @@ Cvar::Cvar<bool> g_bot_lightarmour("g_bot_lightarmour", "whether bots buy Light 
 Cvar::Cvar<bool> g_bot_radar("g_bot_radar", "whether bots buy the Radar", Cvar::NONE, true);
 // bots won't buy radars if more than this percent allies already have it
 Cvar::Cvar<int> g_bot_radarRatio("g_bot_radarRatio", "bots target x% of team owning radar", Cvar::NONE, 75);
-Cvar::Cvar<bool> g_bot_jetpack("g_bot_jetpack", "whether bots buy the Jetpack", Cvar::NONE, false);
+Cvar::Cvar<bool> g_bot_jetpack("g_bot_jetpack", "whether bots buy the Jetpack", Cvar::NONE, true);
 Cvar::Cvar<bool> g_bot_grenade("g_bot_grenade", "whether bots buy the Grenade", Cvar::NONE, false);
 Cvar::Cvar<bool> g_bot_firebomb("g_bot_firebomb", "whether bots buy the Firebomb", Cvar::NONE, false);
 
@@ -1318,7 +1318,8 @@ void SendScoreboardMessageToAllClients()
 
 	for ( i = 0; i < level.maxclients; i++ )
 	{
-		if ( level.clients[ i ].pers.connected == CON_CONNECTED )
+		if ( level.clients[ i ].pers.connected == CON_CONNECTED &&
+		     !( g_entities[ i ].r.svFlags & SVF_BOT ) )
 		{
 			ScoreboardMessage( g_entities + i );
 		}
@@ -2147,11 +2148,13 @@ static void G_EvaluateAcceleration( gentity_t *ent, int msec )
 	vec3_t deltaVelocity;
 	vec3_t deltaAccel;
 
+	float inv_msec = msec ? 1.0f / msec : 1.0f;
+
 	VectorSubtract( ent->s.pos.trDelta, ent->oldVelocity, deltaVelocity );
-	VectorScale( deltaVelocity, 1.0f / ( float ) msec, ent->acceleration );
+	VectorScale( deltaVelocity, inv_msec, ent->acceleration );
 
 	VectorSubtract( ent->acceleration, ent->oldAccel, deltaAccel );
-	VectorScale( deltaAccel, 1.0f / ( float ) msec, ent->jerk );
+	VectorScale( deltaAccel, inv_msec, ent->jerk );
 
 	VectorCopy( ent->s.pos.trDelta, ent->oldVelocity );
 	VectorCopy( ent->acceleration, ent->oldAccel );
