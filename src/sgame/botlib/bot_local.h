@@ -101,9 +101,9 @@ struct OffMeshConnections
 			return;
 		}
 
-		for ( int i = index * 6; i < offMeshConCount * 6 - 1; i++ )
+		for ( int i = index * 6; i < ( offMeshConCount - 1 ) * 6; i++ )
 		{
-			verts[ i ] = verts[ i + 1 ];
+			verts[ i ] = verts[ i + 6 ];
 		}
 
 		for ( int i = index; i < offMeshConCount - 1; i++ )
@@ -169,7 +169,6 @@ struct NavData_t
 	dtTileCache      *cache;
 	dtNavMesh        *mesh;
 	dtNavMeshQuery   *query;
-	dtQueryFilter    filter;
 	NavconMeshProcess process;
 	class_t species;
 };
@@ -177,6 +176,7 @@ struct NavData_t
 struct Bot_t
 {
 	NavData_t         *nav;
+	dtQueryFilter     filter;
 	dtPathCorridor    corridor;
 	int               clientNum;
 	bool              needReplan;

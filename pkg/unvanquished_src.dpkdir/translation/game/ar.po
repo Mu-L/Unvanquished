@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-18 08:30+0200\n"
-"PO-Revision-Date: 2024-08-17 09:20+0000\n"
-"Last-Translator: saif hseen <saifhseen6@gmail.com>\n"
+"POT-Creation-Date: 2024-12-13 13:26+0100\n"
+"PO-Revision-Date: 2024-12-08 11:14+0000\n"
+"Last-Translator: lee-00 <xfz-op@outlook.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/unvanquished/"
 "unvanquished/ar/>\n"
 "Language: ar\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.7\n"
+"X-Generator: Weblate 5.9-dev\n"
 
 #: ui/alien_build.rml:126 ui/human_build.rml:127
 msgid "Build"
@@ -35,7 +35,7 @@ msgstr "تطور"
 
 #: ui/alien_evo.rml:150 ui/hud_alien.rml:235
 msgid "morph points"
-msgstr "نقط التحول"
+msgstr "نقاط التحول"
 
 #: ui/alien_spawn.rml:43
 msgid "Choose your starting form:"
@@ -75,6 +75,10 @@ msgstr "ضع تصويت"
 msgid "Fill with bots"
 msgstr "املأ بلاعبين روبوتات"
 
+#: ui/callvote_fillbots.rml:9
+msgid "How many players (users and bots) should teams have?"
+msgstr ""
+
 #: ui/callvote_fillbots.rml:13
 msgid "Both teams"
 msgstr "الفريقين"
@@ -87,7 +91,7 @@ msgstr "الفضائين"
 #: ui/callvote_fillbots.rml:15 ui/ingame_scoreboard.rml:171
 #: ui/options_fov.rml:15
 msgid "Humans"
-msgstr "الناس"
+msgstr "البشر"
 
 #: ui/callvote_fillbots.rml:17
 msgid "Team"
@@ -99,25 +103,25 @@ msgstr "كمية"
 
 #: ui/callvote_map.rml:26 ui/options_democracy.rml:32
 msgid "Change map"
-msgstr "تغيير الملعب"
+msgstr "تغيير الخريطة"
 
 #: ui/callvote_map.rml:31
 msgid "Vote: change nextmap"
-msgstr "صوت: تغيير الملعب التالي"
+msgstr "صوت: تغيير الخريطة التالية"
 
 #: ui/callvote_map.rml:32
 msgid "Vote: set current map"
-msgstr "صوت: حدد الملعب الحالي"
+msgstr "صوت: حدد الخريطة الحالية"
 
 #: ui/callvote_map.rml:33
 msgid "Set current map (host)"
-msgstr "حدد الملعب الحالي (المضيف)"
+msgstr "حدد الخريطة الحالية (المضيف)"
 
 #: ui/callvote_map.rml:35
 msgid "Method"
 msgstr "الطريقة"
 
-#: ui/callvote_map.rml:39 ui/server_create.rml:64
+#: ui/callvote_map.rml:39 ui/server_create.rml:59
 msgid "Map"
 msgstr "الخريطة"
 
@@ -133,6 +137,10 @@ msgstr "خطأ!"
 msgid "Ok"
 msgstr "حسنا"
 
+#: ui/help_gameplay.rml:12
+msgid "Gameplay Guide"
+msgstr ""
+
 #: ui/help_gameplay.rml:17 ui/welcome.rml:16
 msgid "Welcome"
 msgstr "مرحبا"
@@ -147,7 +155,7 @@ msgstr ""
 
 #: ui/help_gameplay.rml:23
 msgid "More can be found on our website and other community places!"
-msgstr "يمكن العثور على المزيد في موقعنا و مواقع المجنمع الأخرى!"
+msgstr "يمكن العثور على المزيد في موقعنا و مواقع المجتمع الأخرى!"
 
 #: ui/help_gameplay.rml:25
 msgid ""
@@ -249,7 +257,7 @@ msgstr ""
 
 #: ui/help_gameplay.rml:65
 msgid "Mining structures"
-msgstr ""
+msgstr "هياكل التعدين"
 
 #: ui/help_gameplay.rml:68
 msgid ""
@@ -300,7 +308,7 @@ msgstr ""
 
 #: ui/help_gameplay.rml:91
 msgid "Wildfire"
-msgstr ""
+msgstr "حريق"
 
 #: ui/help_gameplay.rml:94
 msgid ""
@@ -340,7 +348,7 @@ msgstr ""
 
 #: ui/help_gameplay.rml:114
 msgid "Healing"
-msgstr ""
+msgstr "علاج"
 
 #: ui/help_gameplay.rml:117
 msgid "Dying feeds the enemy, you may want to save your life!"
@@ -384,7 +392,7 @@ msgstr ""
 
 #: ui/help_gameplay.rml:139
 msgid "Wallwalking"
-msgstr ""
+msgstr "المشي على الحائط"
 
 #: ui/help_gameplay.rml:142
 msgid ""
@@ -456,7 +464,7 @@ msgstr ""
 
 #: ui/hud_basics.rml:199
 msgid "Life"
-msgstr ""
+msgstr "الحياة"
 
 #: ui/hud_basics.rml:203
 msgid "fps"
@@ -468,7 +476,7 @@ msgstr ""
 
 #: ui/hud_bp.rml:29
 msgid "build points"
-msgstr ""
+msgstr "نقاط البناء"
 
 #: ui/hud_human.rml:268
 msgid "Credits"
@@ -476,7 +484,7 @@ msgstr ""
 
 #: ui/human_buy.rml:209 ui/options_player.rml:77
 msgid "Weapons"
-msgstr ""
+msgstr "الأسلحة"
 
 #: ui/human_buy.rml:210 ui/human_buy.rml:226
 msgid "TAB"
@@ -484,11 +492,11 @@ msgstr ""
 
 #: ui/human_buy.rml:218
 msgid "Range:"
-msgstr ""
+msgstr "المدى:"
 
 #: ui/human_buy.rml:219
 msgid "Damage:"
-msgstr ""
+msgstr "الضرر:"
 
 #: ui/human_buy.rml:220
 msgid "Fire Rate:"
@@ -500,9 +508,9 @@ msgstr ""
 
 #: ui/human_spawn.rml:43
 msgid "Choose your starting equipment:"
-msgstr ""
+msgstr "اختار تجهيزات البداية:"
 
-#: ui/human_spawn.rml:45
+#: ui/human_spawn.rml:45 ui/server_setup.rml:275
 msgid "SMG"
 msgstr ""
 
@@ -527,11 +535,11 @@ msgstr ""
 #: ui/ingame_scoreboard.rml:190 ui/server_browser.rml:44
 #: ui/server_browser.rml:60
 msgid "Map:"
-msgstr ""
+msgstr "الخريطة:"
 
 #: ui/ingame_scoreboard.rml:191
 msgid "Time:"
-msgstr ""
+msgstr "الوقت:"
 
 #: ui/ingame_teamselect.rml:56
 msgid "Auto-select a team"
@@ -573,11 +581,11 @@ msgstr ""
 
 #: ui/menu_ingame.rml:22
 msgid "Match"
-msgstr ""
+msgstr "مباراة"
 
 #: ui/menu_ingame.rml:25
 msgid "Leave match"
-msgstr ""
+msgstr "غادر المباراة"
 
 #: ui/menu_ingame.rml:26
 msgid "Resume action"
@@ -593,11 +601,11 @@ msgstr ""
 
 #: ui/menu_ingame.rml:40 ui/server_setup.rml:8
 msgid "Server setup"
-msgstr ""
+msgstr "إعداد الخادم"
 
 #: ui/menu_ingame.rml:42
 msgid "Stop server"
-msgstr ""
+msgstr "إيقاف الخادم"
 
 #: ui/menu_ingame.rml:44
 msgid "Pause server"
@@ -605,11 +613,11 @@ msgstr ""
 
 #: ui/menu_ingame.rml:46 ui/options_bots.rml:8
 msgid "Bots"
-msgstr ""
+msgstr "روبوتات"
 
 #: ui/menu_ingame.rml:50 ui/menu_main.rml:27
 msgid "Main menu"
-msgstr ""
+msgstr "القائمة الرئيسية"
 
 #: ui/menu_ingame.rml:52 ui/menu_main.rml:28
 msgid "Server listings"
@@ -621,7 +629,7 @@ msgstr ""
 
 #: ui/menu_ingame.rml:54 ui/menu_main.rml:32 ui/options.rml:9
 msgid "Options"
-msgstr ""
+msgstr "الإعدادات"
 
 #: ui/menu_ingame.rml:55 ui/menu_main.rml:35
 msgid "Gameplay guide"
@@ -641,15 +649,15 @@ msgstr ""
 
 #: ui/options_bots.rml:10
 msgid "Add an alien bot"
-msgstr ""
+msgstr "أضف روبوت فضائي"
 
 #: ui/options_bots.rml:12
 msgid "Add a human bot"
-msgstr ""
+msgstr "أضف روبوت بشري"
 
 #: ui/options_bots.rml:14 src/sgame/sg_votes.cpp:337
 msgid "Remove all bots"
-msgstr ""
+msgstr "إزالة جميع الروبوتات"
 
 #: ui/options_democracy.rml:13
 msgid "Global vote:"
@@ -657,15 +665,15 @@ msgstr ""
 
 #: ui/options_democracy.rml:15 ui/options_democracy.rml:24
 msgid "yes"
-msgstr ""
+msgstr "نعم"
 
 #: ui/options_democracy.rml:16 ui/options_democracy.rml:25
 msgid "or"
-msgstr ""
+msgstr "أو"
 
 #: ui/options_democracy.rml:18 ui/options_democracy.rml:27
 msgid "no"
-msgstr ""
+msgstr "لا"
 
 #: ui/options_democracy.rml:22
 msgid "Team vote:"
@@ -673,7 +681,7 @@ msgstr ""
 
 #: ui/options_democracy.rml:30
 msgid "Kick bots"
-msgstr ""
+msgstr "طرد الروبوتات"
 
 #: ui/options_democracy.rml:33
 msgid "Extend timelimit"
@@ -685,7 +693,7 @@ msgstr ""
 
 #: ui/options_democracy.rml:35
 msgid "Admit defeat"
-msgstr ""
+msgstr "اعترف بالهزيمة"
 
 #: ui/options_fov.rml:10
 msgid "Angles of view"
@@ -716,19 +724,19 @@ msgstr ""
 msgid "reset"
 msgstr ""
 
-#: ui/options_fov.rml:40
+#: ui/options_fov.rml:40 ui/server_setup.rml:356
 msgid "Mantis"
 msgstr ""
 
-#: ui/options_fov.rml:48
+#: ui/options_fov.rml:48 ui/server_setup.rml:360
 msgid "Marauder"
 msgstr ""
 
-#: ui/options_fov.rml:56
+#: ui/options_fov.rml:56 ui/server_setup.rml:368
 msgid "Dragoon"
 msgstr ""
 
-#: ui/options_fov.rml:64
+#: ui/options_fov.rml:64 ui/server_setup.rml:376
 msgid "Tyrant"
 msgstr ""
 
@@ -742,7 +750,7 @@ msgstr ""
 
 #: ui/options_fov.rml:76 ui/options_fov.rml:87
 msgid "Disabled"
-msgstr ""
+msgstr "معطل"
 
 #: ui/options_fov.rml:77 ui/options_fov.rml:88
 msgid "Mild"
@@ -754,7 +762,7 @@ msgstr ""
 
 #: ui/options_fov.rml:79 ui/options_fov.rml:90
 msgid "Strong"
-msgstr ""
+msgstr "قوي"
 
 #: ui/options_fov.rml:81
 msgid "Up and down movement"
@@ -770,7 +778,7 @@ msgstr ""
 
 #: ui/options_graphics.rml:20 ui/options.rml:15
 msgid "Graphics"
-msgstr ""
+msgstr "الروسومات"
 
 #: ui/options_graphics.rml:23 ui/options_graphics.rml:25 ui/options_keys.rml:12
 msgid "Presets"
@@ -778,7 +786,7 @@ msgstr ""
 
 #: ui/options_graphics.rml:27
 msgid "Lowest"
-msgstr ""
+msgstr "الحد الادنى"
 
 #: ui/options_graphics.rml:28
 msgid ""
@@ -789,7 +797,7 @@ msgstr ""
 #: ui/options_graphics.rml:31 ui/options_graphics.rml:253
 #: ui/options_graphics.rml:368 ui/options_graphics.rml:377
 msgid "Low"
-msgstr ""
+msgstr "منخفض"
 
 #: ui/options_graphics.rml:32
 msgid ""
@@ -799,7 +807,7 @@ msgstr ""
 
 #: ui/options_graphics.rml:35
 msgid "Medium"
-msgstr ""
+msgstr "متوسط"
 
 #: ui/options_graphics.rml:36
 msgid ""
@@ -810,7 +818,7 @@ msgstr ""
 #: ui/options_graphics.rml:39 ui/options_graphics.rml:255
 #: ui/options_graphics.rml:367 ui/options_graphics.rml:375
 msgid "High"
-msgstr ""
+msgstr "عالي"
 
 #: ui/options_graphics.rml:40
 msgid ""
@@ -820,7 +828,7 @@ msgstr ""
 
 #: ui/options_graphics.rml:43
 msgid "Ultra"
-msgstr ""
+msgstr "الحد الاقصى"
 
 #: ui/options_graphics.rml:44
 msgid ""
@@ -830,7 +838,7 @@ msgstr ""
 
 #: ui/options_graphics.rml:47 ui/options_graphics.rml:49
 msgid "Video"
-msgstr ""
+msgstr "فيديو"
 
 #: ui/options_graphics.rml:51
 msgid "Brightness"
@@ -850,11 +858,11 @@ msgstr ""
 
 #: ui/options_graphics.rml:69
 msgid "Fullscreen"
-msgstr ""
+msgstr "الشاشة كاملة"
 
 #: ui/options_graphics.rml:74 ui/options_graphics.rml:378
 msgid "Off"
-msgstr ""
+msgstr "إيقاف"
 
 #: ui/options_graphics.rml:75
 msgid "Flexible Vsync"
@@ -877,22 +885,22 @@ msgstr ""
 
 #: ui/options_graphics.rml:84
 msgid "Fast approximate anti-aliasing (FXAA)"
-msgstr ""
+msgstr "تقريب سريع مضاد للتعرج (FXAA)"
 
 #: ui/options_graphics.rml:88 ui/options_graphics.rml:135
 #: ui/options_graphics.rml:199 ui/options_graphics.rml:238
 #: ui/options_graphics.rml:281 ui/options_graphics.rml:319
 #: ui/options_graphics.rml:342
 msgid "Apply now"
-msgstr ""
+msgstr "التطبيق الأن"
 
 #: ui/options_graphics.rml:92
 msgid "Lighting"
-msgstr ""
+msgstr "الإضاءة"
 
 #: ui/options_graphics.rml:94
 msgid "Lights"
-msgstr ""
+msgstr "الأضواء"
 
 #: ui/options_graphics.rml:97
 msgid "Light mapping"
@@ -900,7 +908,7 @@ msgstr ""
 
 #: ui/options_graphics.rml:97
 msgid "normal"
-msgstr ""
+msgstr "عادي"
 
 #: ui/options_graphics.rml:98
 msgid "Vertex lighting"
@@ -963,16 +971,16 @@ msgstr ""
 
 #: ui/options_graphics.rml:129
 msgid "low"
-msgstr ""
+msgstr "منخفض"
 
 #: ui/options_graphics.rml:130 ui/options_graphics.rml:351
 #: ui/options_ui.rml:177
 msgid "None"
-msgstr ""
+msgstr "لا شيء"
 
 #: ui/options_graphics.rml:132
 msgid "Shadows"
-msgstr ""
+msgstr "الظلال"
 
 #: ui/options_graphics.rml:139
 msgid "Textures"
@@ -980,31 +988,31 @@ msgstr ""
 
 #: ui/options_graphics.rml:141 ui/server_setup.rml:13
 msgid "General"
-msgstr ""
+msgstr "عام"
 
 #: ui/options_graphics.rml:144 ui/options_graphics.rml:157
 msgid "No limit"
-msgstr ""
+msgstr "بلا حدود"
 
 #: ui/options_graphics.rml:145
 msgid "(ultra)"
-msgstr ""
+msgstr "(الحد الاقصى)"
 
 #: ui/options_graphics.rml:146
 msgid "(high)"
-msgstr ""
+msgstr "(عالي)"
 
 #: ui/options_graphics.rml:147
 msgid "(medium)"
-msgstr ""
+msgstr "(متوسط)"
 
 #: ui/options_graphics.rml:148
 msgid "(low)"
-msgstr ""
+msgstr "(منخفض)"
 
 #: ui/options_graphics.rml:149
 msgid "(lowest)"
-msgstr ""
+msgstr "(الحد الادنى)"
 
 #: ui/options_graphics.rml:151
 msgid "Image size limit"
@@ -1016,11 +1024,11 @@ msgstr ""
 
 #: ui/options_graphics.rml:158
 msgid "No smaller than screen"
-msgstr ""
+msgstr "ليس أصغر من الشاشة"
 
 #: ui/options_graphics.rml:159
 msgid "No larger than screen"
-msgstr ""
+msgstr "ليس أكبر من الشاشة"
 
 #: ui/options_graphics.rml:161
 msgid "Menu image size limit"
@@ -1049,11 +1057,10 @@ msgid ""
 msgstr ""
 
 #: ui/options_graphics.rml:174 ui/options_graphics.rml:224
-#: ui/options_graphics.rml:248 ui/options_graphics.rml:306
-#: ui/options_graphics.rml:329 ui/options_graphics.rml:334
-#: ui/options_graphics.rml:339
+#: ui/options_graphics.rml:248 ui/options_graphics.rml:329
+#: ui/options_graphics.rml:334 ui/options_graphics.rml:339
 msgid "Experimental."
-msgstr ""
+msgstr "تجريبي."
 
 #: ui/options_graphics.rml:177
 msgid "Mip-mapping"
@@ -1067,7 +1074,7 @@ msgstr ""
 
 #: ui/options_graphics.rml:185 ui/options_ui.rml:47
 msgid "No"
-msgstr ""
+msgstr "لا"
 
 #: ui/options_graphics.rml:187
 msgid "Anisotropic mip-mapping"
@@ -1083,7 +1090,7 @@ msgstr ""
 
 #: ui/options_graphics.rml:192
 msgid "better"
-msgstr ""
+msgstr "أفضل"
 
 #: ui/options_graphics.rml:193
 msgid "Bilinear"
@@ -1099,7 +1106,7 @@ msgstr ""
 
 #: ui/options_graphics.rml:207
 msgid "Sky"
-msgstr ""
+msgstr "السماء"
 
 #: ui/options_graphics.rml:209
 msgid "Draw the sky."
@@ -1161,19 +1168,19 @@ msgstr ""
 
 #: ui/options_graphics.rml:252
 msgid "Very low"
-msgstr ""
+msgstr "منخفض جدا"
 
 #: ui/options_graphics.rml:254 ui/options_graphics.rml:376
 msgid "Moderate"
-msgstr ""
+msgstr "متوسط"
 
 #: ui/options_graphics.rml:256
 msgid "Very high"
-msgstr ""
+msgstr "عالي جدا"
 
 #: ui/options_graphics.rml:258 ui/options_graphics.rml:370
 msgid "Quality"
-msgstr ""
+msgstr "الجودة"
 
 #: ui/options_graphics.rml:259
 msgid ""
@@ -1188,11 +1195,11 @@ msgstr ""
 #: ui/options_graphics.rml:266 ui/options_graphics.rml:388
 #: ui/options_mouse.rml:20 ui/server_setup.rml:72
 msgid "Current:"
-msgstr ""
+msgstr "الحالي:"
 
 #: ui/options_graphics.rml:272 ui/options_ui.rml:129
 msgid "Never"
-msgstr ""
+msgstr "أبداً"
 
 #: ui/options_graphics.rml:273
 msgid "Cache on disk"
@@ -1213,7 +1220,7 @@ msgstr ""
 #: ui/options_graphics.rml:285 ui/options_graphics.rml:287
 #: ui/options_sound.rml:13
 msgid "Effects"
-msgstr ""
+msgstr "التأثيرات"
 
 #: ui/options_graphics.rml:289
 msgid "Bloom"
@@ -1303,43 +1310,43 @@ msgstr ""
 
 #: ui/options_graphics.rml:351
 msgid "disabled"
-msgstr ""
+msgstr "معطل"
 
 #: ui/options_graphics.rml:352
 msgid "All structures"
-msgstr ""
+msgstr "جميع الهياكل"
 
 #: ui/options_graphics.rml:353
 msgid "Support structures"
-msgstr ""
+msgstr "هياكل الدعم"
 
 #: ui/options_graphics.rml:354
 msgid "Offensive structures"
-msgstr ""
+msgstr "الهياكل الهجومية"
 
 #: ui/options_graphics.rml:355
 msgid "Alien structures"
-msgstr ""
+msgstr "الهياكل الفضائية"
 
 #: ui/options_graphics.rml:356
 msgid "Human structures"
-msgstr ""
+msgstr "الهياكل البشرية"
 
 #: ui/options_graphics.rml:357
 msgid "Alien support structures"
-msgstr ""
+msgstr "هياكل الدعم الفضائية"
 
 #: ui/options_graphics.rml:358
 msgid "Human support structures"
-msgstr ""
+msgstr "هياكل الدعم البشرية"
 
 #: ui/options_graphics.rml:359
 msgid "Offensive alien structures"
-msgstr ""
+msgstr "الهياكل الهجومية الفضائية"
 
 #: ui/options_graphics.rml:360
 msgid "Offensive human structures"
-msgstr ""
+msgstr "الهياكل الهجومية البشرية"
 
 #: ui/options_graphics.rml:362
 msgid "Building ranges"
@@ -1398,55 +1405,55 @@ msgstr ""
 
 #: ui/options_keys.rml:33
 msgid "Move"
-msgstr ""
+msgstr "تحرك"
 
 #: ui/options_keys.rml:37
 msgid "Run / Walk:"
-msgstr ""
+msgstr "اجري / امشي:"
 
 #: ui/options_keys.rml:41
 msgid "Sprint:"
-msgstr ""
+msgstr "جري سريع:"
 
 #: ui/options_keys.rml:45
 msgid "Forward:"
-msgstr ""
+msgstr "الى الامام:"
 
 #: ui/options_keys.rml:49
 msgid "Backpedal:"
-msgstr ""
+msgstr "الى الخلف:"
 
 #: ui/options_keys.rml:53
 msgid "Move left:"
-msgstr ""
+msgstr "تحرك الى اليسار:"
 
 #: ui/options_keys.rml:57
 msgid "Move right:"
-msgstr ""
+msgstr "تحرك الى اليمين:"
 
 #: ui/options_keys.rml:61
 msgid "Jump:"
-msgstr ""
+msgstr "إقفز:"
 
 #: ui/options_keys.rml:65
 msgid "Crouch:"
-msgstr ""
+msgstr "انحناء:"
 
 #: ui/options_keys.rml:69
 msgid "Wallwalk:"
-msgstr ""
+msgstr "المشي على الحائط:"
 
 #: ui/options_keys.rml:72
 msgid "Abilities"
-msgstr ""
+msgstr "القدرات"
 
 #: ui/options_keys.rml:76
 msgid "Primary attack:"
-msgstr ""
+msgstr "الهجوم الرئيسي:"
 
 #: ui/options_keys.rml:80
 msgid "Secondary attack:"
-msgstr ""
+msgstr "الهجوم الثانوي:"
 
 #: ui/options_keys.rml:84
 msgid "Shoot barb:"
@@ -1454,11 +1461,11 @@ msgstr ""
 
 #: ui/options_keys.rml:88
 msgid "Throw grenade:"
-msgstr ""
+msgstr "إرمي القنبلة اليدوية:"
 
 #: ui/options_keys.rml:92
 msgid "Reload:"
-msgstr ""
+msgstr "إعادة التعبئة:"
 
 #: ui/options_keys.rml:96
 msgid "Use medkit:"
@@ -1466,15 +1473,15 @@ msgstr ""
 
 #: ui/options_keys.rml:100
 msgid "Use structure:"
-msgstr ""
+msgstr "إستخدم الهيكل:"
 
 #: ui/options_keys.rml:104
 msgid "Evolve:"
-msgstr ""
+msgstr "تحول:"
 
 #: ui/options_keys.rml:107
 msgid "Chat/Vote"
-msgstr ""
+msgstr "دردشة/تصويت"
 
 #: ui/options_keys.rml:111
 msgid "Gesture:"
@@ -1494,11 +1501,11 @@ msgstr ""
 
 #: ui/options_keys.rml:127
 msgid "Vote Yes:"
-msgstr ""
+msgstr "صوت نعم:"
 
 #: ui/options_keys.rml:131
 msgid "Vote No:"
-msgstr ""
+msgstr "صوت لا:"
 
 #: ui/options_keys.rml:135
 msgid "Team vote Yes:"
@@ -1508,7 +1515,7 @@ msgstr ""
 msgid "Team vote No:"
 msgstr ""
 
-#: ui/options_keys.rml:142
+#: ui/options_keys.rml:142 ui/server_setup.rml:322
 msgid "Misc"
 msgstr ""
 
@@ -1548,11 +1555,11 @@ msgstr ""
 
 #: ui/options_keys.rml:171
 msgid "Look up:"
-msgstr ""
+msgstr "أنظر للأعلى:"
 
 #: ui/options_keys.rml:175
 msgid "Look down:"
-msgstr ""
+msgstr "أنظر للأسفل:"
 
 #: ui/options_keys.rml:179
 msgid "Turn left:"
@@ -1624,7 +1631,7 @@ msgstr ""
 
 #: ui/options_movements_cosmetic.rml:8
 msgid "Movement"
-msgstr ""
+msgstr "الحركة"
 
 #: ui/options_movements_cosmetic.rml:10
 msgid "Wall-walking auto-pitch"
@@ -1662,15 +1669,15 @@ msgstr ""
 
 #: ui/options_movements_cosmetic.rml:38
 msgid "Disable"
-msgstr ""
+msgstr "عطّل"
 
 #: ui/options_movements_cosmetic.rml:39
 msgid "Humans only"
-msgstr ""
+msgstr "البشر فقط"
 
 #: ui/options_movements_cosmetic.rml:40
 msgid "Humans and aliens"
-msgstr ""
+msgstr "البشر و الفضائيين"
 
 #: ui/options_movements_cosmetic.rml:41
 msgid "Humans (translucent)"
@@ -1698,7 +1705,7 @@ msgstr ""
 
 #: ui/options_player.rml:18
 msgid "Player Setup"
-msgstr ""
+msgstr "إعدادات اللاعب"
 
 #: ui/options_player.rml:20
 msgid "Personal"
@@ -1750,7 +1757,7 @@ msgstr ""
 
 #: ui/options_player.rml:186
 msgid "Others"
-msgstr ""
+msgstr "الأخرين"
 
 #: ui/options_player.rml:214
 msgid "Tutorial mode"
@@ -1764,17 +1771,17 @@ msgstr ""
 msgid "Show only team chat"
 msgstr ""
 
-#: ui/options_player.rml:222
+#: ui/options_player.rml:224
 msgid "Show obituaries"
 msgstr ""
 
 #: ui/options.rml:11
 msgid "Player"
-msgstr ""
+msgstr "اللاعب"
 
 #: ui/options.rml:21 ui/options_sound.rml:7
 msgid "Sound"
-msgstr ""
+msgstr "الصوت"
 
 #: ui/options.rml:23
 msgid "User interface and HUD"
@@ -1786,7 +1793,7 @@ msgstr ""
 
 #: ui/options_sound.rml:17
 msgid "Music"
-msgstr ""
+msgstr "الموسيقى"
 
 #: ui/options_sound.rml:21
 msgid "Reverb intensity"
@@ -1822,7 +1829,7 @@ msgstr ""
 
 #: ui/options_ui.rml:24
 msgid "Language"
-msgstr ""
+msgstr "اللغة"
 
 #: ui/options_ui.rml:25 ui/options_welcome.rml:19
 msgid "Some languages are not fully translated."
@@ -1830,7 +1837,7 @@ msgstr ""
 
 #: ui/options_ui.rml:42 ui/options_welcome.rml:36
 msgid "Change language"
-msgstr ""
+msgstr "تغيير اللغة"
 
 #: ui/options_ui.rml:45
 msgid "Real-time clock"
@@ -1838,11 +1845,11 @@ msgstr ""
 
 #: ui/options_ui.rml:48
 msgid "12 Hour"
-msgstr ""
+msgstr "12 ساعة"
 
 #: ui/options_ui.rml:49
 msgid "24 Hour"
-msgstr ""
+msgstr "24 ساعة"
 
 #: ui/options_ui.rml:51
 msgid "Show the time in real-life."
@@ -1924,19 +1931,19 @@ msgstr ""
 msgid "Pain Saw"
 msgstr ""
 
-#: ui/options_ui.rml:110
+#: ui/options_ui.rml:110 ui/server_setup.rml:283
 msgid "Shotgun"
 msgstr ""
 
-#: ui/options_ui.rml:111
+#: ui/options_ui.rml:111 ui/server_setup.rml:287
 msgid "Lasgun"
 msgstr ""
 
-#: ui/options_ui.rml:112
+#: ui/options_ui.rml:112 ui/server_setup.rml:291
 msgid "Mass Driver"
 msgstr ""
 
-#: ui/options_ui.rml:113
+#: ui/options_ui.rml:113 ui/server_setup.rml:295
 msgid "Chaingun"
 msgstr ""
 
@@ -1944,11 +1951,11 @@ msgstr ""
 msgid "Flamer"
 msgstr ""
 
-#: ui/options_ui.rml:115
+#: ui/options_ui.rml:115 ui/server_setup.rml:303
 msgid "Pulse Rifle"
 msgstr ""
 
-#: ui/options_ui.rml:116
+#: ui/options_ui.rml:116 ui/server_setup.rml:307
 msgid "Lucifer Cannon"
 msgstr ""
 
@@ -1962,7 +1969,7 @@ msgstr ""
 
 #: ui/options_ui.rml:131
 msgid "Always"
-msgstr ""
+msgstr "دائماً"
 
 #: ui/options_ui.rml:136
 msgid "Crosshair size"
@@ -2097,14 +2104,10 @@ msgid "Developer mode (enable cheats)"
 msgstr ""
 
 #: ui/server_create.rml:54
-msgid "Extra packages to load"
-msgstr ""
-
-#: ui/server_create.rml:59
 msgid "Building layout to use"
 msgstr ""
 
-#: ui/server_create.rml:67
+#: ui/server_create.rml:62
 msgid "Start"
 msgstr ""
 
@@ -2192,6 +2195,10 @@ msgstr ""
 msgid "Push slow people away from spawns."
 msgstr ""
 
+#: ui/server_setup.rml:93
+msgid "Momentum"
+msgstr ""
+
 #: ui/server_setup.rml:96
 msgid "Half life time"
 msgstr ""
@@ -2252,6 +2259,10 @@ msgstr ""
 msgid "Momentum reward multiplier for killing buildables"
 msgstr ""
 
+#: ui/server_setup.rml:153
+msgid "Build system"
+msgstr ""
+
 #: ui/server_setup.rml:156
 msgid "Starting value"
 msgstr ""
@@ -2284,6 +2295,10 @@ msgstr ""
 msgid "The duration one will wait before BP recovery gets twice as slow"
 msgstr ""
 
+#: ui/server_setup.rml:189
+msgid "Bots: General"
+msgstr ""
+
 #: ui/server_setup.rml:192
 msgid "Minimum bots per team"
 msgstr ""
@@ -2302,6 +2317,126 @@ msgstr ""
 
 #: ui/server_setup.rml:201
 msgid "Only works for new bots."
+msgstr ""
+
+#: ui/server_setup.rml:206
+msgid "Humanity"
+msgstr ""
+
+#: ui/server_setup.rml:209
+msgid "Field of view"
+msgstr ""
+
+#: ui/server_setup.rml:217
+msgid "Reaction time"
+msgstr ""
+
+#: ui/server_setup.rml:224
+msgid "Behaviour"
+msgstr ""
+
+#: ui/server_setup.rml:227
+msgid "Attack structures"
+msgstr ""
+
+#: ui/server_setup.rml:229
+msgid "Cheating"
+msgstr ""
+
+#: ui/server_setup.rml:232
+msgid "Infinite funds"
+msgstr ""
+
+#: ui/server_setup.rml:236
+msgid "Ignore momentum"
+msgstr ""
+
+#: ui/server_setup.rml:238
+msgid "Navmesh generation"
+msgstr ""
+
+#: ui/server_setup.rml:241
+msgid "Generate navmeshes at load time"
+msgstr ""
+
+#: ui/server_setup.rml:245
+msgid "Number of worker threads"
+msgstr ""
+
+#: ui/server_setup.rml:253
+msgid "Bots: Humans"
+msgstr ""
+
+#: ui/server_setup.rml:254 ui/server_setup.rml:339
+msgid "Overall"
+msgstr ""
+
+#: ui/server_setup.rml:257
+msgid "Human bots purchase equipment"
+msgstr ""
+
+#: ui/server_setup.rml:261 ui/server_setup.rml:346
+msgid "Aim speed modifier (higher is slower)"
+msgstr ""
+
+#: ui/server_setup.rml:267 ui/server_setup.rml:353
+msgid "Individually"
+msgstr ""
+
+#: ui/server_setup.rml:268
+msgid "Primary Weapons"
+msgstr ""
+
+#: ui/server_setup.rml:271
+msgid "Construction Kit (repairs)"
+msgstr ""
+
+#: ui/server_setup.rml:279
+msgid "Painsaw"
+msgstr ""
+
+#: ui/server_setup.rml:299
+msgid "Flamethrower"
+msgstr ""
+
+#: ui/server_setup.rml:309
+msgid "Armors"
+msgstr ""
+
+#: ui/server_setup.rml:312
+msgid "whether bots buy Light Armour"
+msgstr ""
+
+#: ui/server_setup.rml:316
+msgid "whether bots buy Medium Armour"
+msgstr ""
+
+#: ui/server_setup.rml:320
+msgid "whether bots buy the Battlesuit"
+msgstr ""
+
+#: ui/server_setup.rml:325
+msgid "Firebomb"
+msgstr ""
+
+#: ui/server_setup.rml:329
+msgid "Grenade"
+msgstr ""
+
+#: ui/server_setup.rml:333
+msgid "Radar"
+msgstr ""
+
+#: ui/server_setup.rml:342
+msgid "Alien bots morph"
+msgstr ""
+
+#: ui/server_setup.rml:364
+msgid "Advanced Marauder"
+msgstr ""
+
+#: ui/server_setup.rml:372
+msgid "Advanced Dragoon"
 msgstr ""
 
 #: ui/transition_connecting.rml:24 ui/transition_downloading.rml:55
@@ -2324,11 +2459,7 @@ msgstr ""
 msgid "Size:"
 msgstr ""
 
-#: ui/transition_loading.rml:104
-msgid "Loading"
-msgstr ""
-
-#: ui/welcome.rml:19
+#: ui/welcome.rml:12 ui/welcome.rml:19
 msgid "Welcome to Unvanquished"
 msgstr ""
 
@@ -3912,461 +4043,461 @@ msgstr ""
 msgid "Same as screen (%dx%d)"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:2534
+#: src/cgame/cg_rocket_draw.cpp:2536
 msgid "You are at the front of the spawn queue"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:2538
+#: src/cgame/cg_rocket_draw.cpp:2540
 #, c-format
 msgid "You are at position %d in the spawn queue"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:2578
+#: src/cgame/cg_rocket_draw.cpp:2580
 msgid "There are no spawns remaining"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:2582
+#: src/cgame/cg_rocket_draw.cpp:2584
 #, c-format
 msgid "There is %d spawn remaining"
 msgid_plural "There are %d spawns remaining"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/cgame/cg_rocket_draw.cpp:3131
+#: src/cgame/cg_rocket_draw.cpp:3133
 #, c-format
 msgid "Awaiting connection…%i"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:3135
+#: src/cgame/cg_rocket_draw.cpp:3137
 #, c-format
 msgid "Awaiting challenge…%i"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:3139
+#: src/cgame/cg_rocket_draw.cpp:3141
 msgid "Awaiting gamestate…"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:3221
+#: src/cgame/cg_rocket_draw.cpp:3223
 msgid "Say:"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:3222
+#: src/cgame/cg_rocket_draw.cpp:3224
 msgid "Team Say:"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:3223
+#: src/cgame/cg_rocket_draw.cpp:3225
 msgid "Admin Say:"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:3224
+#: src/cgame/cg_rocket_draw.cpp:3226
 msgid "Command:"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:3574
+#: src/cgame/cg_rocket_draw.cpp:3576
 msgid "FIGHT!"
 msgstr ""
 
-#: src/cgame/cg_rocket_draw.cpp:3668
+#: src/cgame/cg_rocket_draw.cpp:3670
 msgid "estimating"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:451
+#: src/cgame/cg_servercmds.cpp:448
 msgid ""
 "The alien team has too many players. Please wait until slots become "
 "available or join the human team."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:453
+#: src/cgame/cg_servercmds.cpp:450
 msgid "The alien team has too many players"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:457
+#: src/cgame/cg_servercmds.cpp:454
 msgid ""
 "The human team has too many players. Please wait until slots become "
 "available or join the alien team."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:459
+#: src/cgame/cg_servercmds.cpp:456
 msgid "The human team has too many players"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:463
+#: src/cgame/cg_servercmds.cpp:460
 msgid "The alien team is locked. You cannot join the aliens at this time."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:465
+#: src/cgame/cg_servercmds.cpp:462
 msgid "The alien team is locked"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:469
+#: src/cgame/cg_servercmds.cpp:466
 msgid "The human team is locked. You cannot join the humans at this time."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:471
+#: src/cgame/cg_servercmds.cpp:468
 msgid "The human team is locked"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:475
+#: src/cgame/cg_servercmds.cpp:472
 msgid ""
 "The maximum number of playing clients has been reached. Please wait until "
 "slots become available."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:477
+#: src/cgame/cg_servercmds.cpp:474
 msgid "No free player slots"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:481
+#: src/cgame/cg_servercmds.cpp:478
 msgid "You must wait until the warmup time is finished before joining a team."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:483
+#: src/cgame/cg_servercmds.cpp:480
 msgid "You cannot join a team during warmup."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:491
+#: src/cgame/cg_servercmds.cpp:488
 msgid "Cheats are not enabled on this server"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:495
+#: src/cgame/cg_servercmds.cpp:492
 msgid ""
 "Cheats are not enabled on this server, so you may not use this command while "
 "on a team"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:502
+#: src/cgame/cg_servercmds.cpp:499
 msgid "Join a team first"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:508
+#: src/cgame/cg_servercmds.cpp:505
 msgid "You can only use this command when spectating"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:513
+#: src/cgame/cg_servercmds.cpp:510
 msgid "Must be alien to use this command"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:518
+#: src/cgame/cg_servercmds.cpp:515
 msgid "Must be human to use this command"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:523
+#: src/cgame/cg_servercmds.cpp:520
 msgid "Must be alive to use this command"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:529
+#: src/cgame/cg_servercmds.cpp:526
 msgid ""
 "There is no room to build here. Move until the structure turns translucent "
 "green, indicating a valid build location."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:531
+#: src/cgame/cg_servercmds.cpp:528
 msgid "There is no room to build here"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:535
+#: src/cgame/cg_servercmds.cpp:532
 msgid ""
 "Cannot build on this surface. The surface is too steep or unsuitable for "
 "building. Please choose another site for this structure."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:538
+#: src/cgame/cg_servercmds.cpp:535
 msgid "Cannot build on this surface"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:543
+#: src/cgame/cg_servercmds.cpp:540
 msgid "You cannot build that structure"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:547
+#: src/cgame/cg_servercmds.cpp:544
 msgid ""
 "This action would remove your team's last spawn point, which often quickly "
 "results in a loss. Try building more spawns."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:550
+#: src/cgame/cg_servercmds.cpp:547
 msgid "You may not deconstruct the last spawn"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:554
+#: src/cgame/cg_servercmds.cpp:551
 msgid ""
 "The main structure is protected against instant removal. When it is marked, "
 "you can move it to another place by building it there."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:557
+#: src/cgame/cg_servercmds.cpp:554
 msgid "You may not deconstruct this structure"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:561
+#: src/cgame/cg_servercmds.cpp:558
 msgid "Building has been disabled on the server for your team."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:562
+#: src/cgame/cg_servercmds.cpp:559
 msgid "Building has been disabled for your team"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:566
+#: src/cgame/cg_servercmds.cpp:563
 msgid "You are no longer permitted to build."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:567
+#: src/cgame/cg_servercmds.cpp:564
 msgid "You are no longer permitted to build"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:571
+#: src/cgame/cg_servercmds.cpp:568
 msgid ""
 "Your team has decided to admit defeat and concede the game: There's no point "
 "in building anything anymore."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:573
+#: src/cgame/cg_servercmds.cpp:570
 msgid "Cannot build after admitting defeat"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:577
+#: src/cgame/cg_servercmds.cpp:574
 msgid ""
 "There are no resources remaining. Free up resources by marking existing "
 "buildables for deconstruction."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:579
+#: src/cgame/cg_servercmds.cpp:576
 msgid "There are no resources remaining"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:583
+#: src/cgame/cg_servercmds.cpp:580
 msgid "This buildable is not powered."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:584
+#: src/cgame/cg_servercmds.cpp:581
 msgid "This buildable is not powered"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:588
+#: src/cgame/cg_servercmds.cpp:585
 msgid ""
 "There is no reactor. A reactor must be built before any other structure can "
 "be placed."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:590
+#: src/cgame/cg_servercmds.cpp:587
 msgid "There is no reactor"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:594
+#: src/cgame/cg_servercmds.cpp:591
 msgid ""
 "There can only be one Reactor. Mark the existing one if you wish to move it."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:596
+#: src/cgame/cg_servercmds.cpp:593
 msgid "There can only be one Reactor"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:601
+#: src/cgame/cg_servercmds.cpp:598
 msgid "Your team cannot have any more drills"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:605
+#: src/cgame/cg_servercmds.cpp:602
 msgid ""
 "You have no room to carry this. Please sell any conflicting upgrades before "
 "purchasing this item."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:607
+#: src/cgame/cg_servercmds.cpp:604
 msgid "You have no room to carry this"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:611
+#: src/cgame/cg_servercmds.cpp:608
 msgid ""
 "Insufficient funds. You do not have enough credits to perform this action."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:613
+#: src/cgame/cg_servercmds.cpp:610
 msgid "Insufficient funds"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:617
+#: src/cgame/cg_servercmds.cpp:614
 msgid ""
 "You already hold this item. It is not possible to carry multiple items of "
 "the same type."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:619
+#: src/cgame/cg_servercmds.cpp:616
 msgid "You already hold this item"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:623
+#: src/cgame/cg_servercmds.cpp:620
 msgid ""
 "You must be near a powered Armoury in order to purchase weapons, upgrades or "
 "ammunition."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:625
+#: src/cgame/cg_servercmds.cpp:622
 msgid "You must be near a powered Armoury"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:629
+#: src/cgame/cg_servercmds.cpp:626
 msgid ""
 "You must be near a Reactor, a Drill or a powered Armoury in order to "
 "purchase energy ammunition."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:631
+#: src/cgame/cg_servercmds.cpp:628
 msgid "You must be near a Reactor, a Drill or a powered Armoury"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:635
+#: src/cgame/cg_servercmds.cpp:632
 msgid "There is not enough room here to change armour."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:636
+#: src/cgame/cg_servercmds.cpp:633
 msgid "Not enough room here to change armour."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:640
+#: src/cgame/cg_servercmds.cpp:637
 msgid ""
 "You are not allowed to buy or sell weapons until your build timer has "
 "expired."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:642
+#: src/cgame/cg_servercmds.cpp:639
 msgid "You can not buy or sell weapons until your build timer expires"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:647
+#: src/cgame/cg_servercmds.cpp:644
 msgid "You must be dead to use the class command"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:651
+#: src/cgame/cg_servercmds.cpp:648
 msgid "Unknown starting item"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:655
+#: src/cgame/cg_servercmds.cpp:652
 msgid "Starting item not allowed"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:661
+#: src/cgame/cg_servercmds.cpp:658
 msgid ""
 "There is no Overmind. An Overmind must be built before any other structure "
 "can be placed."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:663 src/cgame/cg_servercmds.cpp:703
+#: src/cgame/cg_servercmds.cpp:660 src/cgame/cg_servercmds.cpp:700
 msgid "There is no Overmind"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:667
+#: src/cgame/cg_servercmds.cpp:664
 msgid ""
 "There can only be one Overmind. Deconstruct the existing one if you wish to "
 "move it."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:669
+#: src/cgame/cg_servercmds.cpp:666
 msgid "There can only be one Overmind"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:674
+#: src/cgame/cg_servercmds.cpp:671
 msgid "Your team cannot have any more leeches"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:678
+#: src/cgame/cg_servercmds.cpp:675
 msgid ""
 "The Overmind cannot control any more structures. Deconstruct existing "
 "structures to build more."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:680
+#: src/cgame/cg_servercmds.cpp:677
 msgid "The Overmind cannot control any more structures"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:684
+#: src/cgame/cg_servercmds.cpp:681
 msgid ""
 "There is no room to evolve here. Move away from walls or other nearby "
 "objects and try again."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:686
+#: src/cgame/cg_servercmds.cpp:683
 msgid "There is no room to evolve here"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:690
+#: src/cgame/cg_servercmds.cpp:687
 msgid ""
 "This location is too close to the enemy to evolve. Move away from the "
 "enemy's presence and try again."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:692
+#: src/cgame/cg_servercmds.cpp:689
 msgid "This location is too close to the enemy to evolve"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:696 src/cgame/cg_servercmds.cpp:697
+#: src/cgame/cg_servercmds.cpp:693 src/cgame/cg_servercmds.cpp:694
 msgid "The Overmind is too far away to devolve."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:701
+#: src/cgame/cg_servercmds.cpp:698
 msgid ""
 "There is no Overmind. An Overmind must be built to allow you to upgrade."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:707
+#: src/cgame/cg_servercmds.cpp:704
 msgid "You cannot evolve until your build timer has expired."
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:708
+#: src/cgame/cg_servercmds.cpp:705
 msgid "You cannot evolve until your build timer expires"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:712
+#: src/cgame/cg_servercmds.cpp:709
 msgid "Wait a second after attacking or evolving"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:720
+#: src/cgame/cg_servercmds.cpp:717
 #, c-format
 msgid "You cannot evolve into a %s"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:725
+#: src/cgame/cg_servercmds.cpp:722
 msgid "You cannot evolve while wallwalking"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:729
+#: src/cgame/cg_servercmds.cpp:726
 msgid "Unknown class"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:733
+#: src/cgame/cg_servercmds.cpp:730
 #, c-format
 msgid "You cannot spawn as a %s"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:738
+#: src/cgame/cg_servercmds.cpp:735
 #, c-format
 msgid "The %s is not allowed"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:743
+#: src/cgame/cg_servercmds.cpp:740
 #, c-format
 msgid "The %s has not been unlocked yet"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:748
+#: src/cgame/cg_servercmds.cpp:745
 #, c-format
 msgid "cgame: debug: no such menu %d"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:851
+#: src/cgame/cg_servercmds.cpp:848
 msgid "^1*DEAD*^*"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:912
+#: src/cgame/cg_servercmds.cpp:909
 #, c-format
 msgid "%sPrivate message from: ^7%s"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:920
+#: src/cgame/cg_servercmds.cpp:917
 #, c-format
-msgid ">> to reply, say: /m %d [your message] <<"
+msgid ">> to reply, say: '/m %d [your message]' or '/r [your message]' <<"
 msgstr ""
 
-#: src/cgame/cg_servercmds.cpp:1408
+#: src/cgame/cg_servercmds.cpp:1405
 #, c-format
 msgid "Unknown client game command: %s"
 msgstr ""
@@ -4710,15 +4841,15 @@ msgstr ""
 msgid "Ten seconds until inactivity drop!"
 msgstr ""
 
-#: src/sgame/sg_bot.cpp:71
+#: src/sgame/sg_bot.cpp:76
 msgid "^3Alien bot names:"
 msgstr ""
 
-#: src/sgame/sg_bot.cpp:72
+#: src/sgame/sg_bot.cpp:77
 msgid "^3Human bot names:"
 msgstr ""
 
-#: src/sgame/sg_bot.cpp:363
+#: src/sgame/sg_bot.cpp:368
 msgid "$1$^* disconnected"
 msgstr ""
 
@@ -4766,7 +4897,7 @@ msgstr ""
 msgid "$1$^* is connecting…"
 msgstr ""
 
-#: src/sgame/sg_client.cpp:1333
+#: src/sgame/sg_client.cpp:1334
 msgid "$1$^* entered the game"
 msgstr ""
 
@@ -4774,51 +4905,51 @@ msgstr ""
 msgid "Your killer, $1$^*, had $2$ HP."
 msgstr ""
 
-#: src/sgame/sg_combat.cpp:1060
+#: src/sgame/sg_combat.cpp:1036
 msgid "$1$ ^3DECONSTRUCTED^* by $2$"
 msgstr ""
 
-#: src/sgame/sg_combat.cpp:1061
+#: src/sgame/sg_combat.cpp:1037
 msgid "$1$ ^3DESTROYED^* by $2$"
 msgstr ""
 
-#: src/sgame/sg_main.cpp:1977
+#: src/sgame/sg_main.cpp:1978
 msgid "Timelimit hit"
 msgstr ""
 
-#: src/sgame/sg_main.cpp:1988
+#: src/sgame/sg_main.cpp:1989
 msgid "$1$ minutes remaining!"
 msgstr ""
 
-#: src/sgame/sg_main.cpp:1996
+#: src/sgame/sg_main.cpp:1997
 msgid "1 minute remaining!"
 msgstr ""
 
-#: src/sgame/sg_main.cpp:2009
+#: src/sgame/sg_main.cpp:2010
 msgid "Humans win"
 msgstr ""
 
-#: src/sgame/sg_main.cpp:2023
+#: src/sgame/sg_main.cpp:2024
 msgid "Aliens win"
 msgstr ""
 
-#: src/sgame/sg_main.cpp:2037
+#: src/sgame/sg_main.cpp:2038
 msgid "Empty teams skip map time exceeded."
 msgstr ""
 
-#: src/sgame/sg_main.cpp:2201
+#: src/sgame/sg_main.cpp:2204
 msgid "The game has been paused. Please wait."
 msgstr ""
 
-#: src/sgame/sg_main.cpp:2205
+#: src/sgame/sg_main.cpp:2208
 msgid "Server: Game will auto-unpause in $1$ seconds"
 msgstr ""
 
-#: src/sgame/sg_main.cpp:2224
+#: src/sgame/sg_main.cpp:2227
 msgid "Server: The game has been unpaused automatically ($1$ minutes max)"
 msgstr ""
 
-#: src/sgame/sg_main.cpp:2227
+#: src/sgame/sg_main.cpp:2230
 msgid "The game has been unpaused!"
 msgstr ""
 
@@ -4826,15 +4957,15 @@ msgstr ""
 msgid "^1This door is locked!"
 msgstr ""
 
-#: src/sgame/sg_svcmds.cpp:502
+#: src/sgame/sg_svcmds.cpp:527
 msgid "Alien team has admitted defeat"
 msgstr ""
 
-#: src/sgame/sg_svcmds.cpp:507
+#: src/sgame/sg_svcmds.cpp:532
 msgid "Human team has admitted defeat"
 msgstr ""
 
-#: src/sgame/sg_svcmds.cpp:540
+#: src/sgame/sg_svcmds.cpp:565
 msgid "Evacuation ordered"
 msgstr ""
 

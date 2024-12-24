@@ -49,7 +49,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 
 static const int DEFAULT_CONNECTION_SIZE = 50;
 
-static bool GetPointPointedTo( NavData_t *nav, rVec &p )
+static bool GetPointPointedTo( NavData_t *nav, dtQueryFilter &filter, rVec &p )
 {
 	rVec extents;
 	trace_t trace;
@@ -69,7 +69,7 @@ static bool GetPointPointedTo( NavData_t *nav, rVec &p )
 	             CONTENTS_SOLID | CONTENTS_PLAYERCLIP, 0, traceType_t::TT_AABB );
 
 	rVec pos(VEC2GLM( trace.endpos ));
-	if ( dtStatusFailed( nav->query->findNearestPoly( pos, extents, &nav->filter, &nearRef, p ) ) )
+	if ( dtStatusFailed( nav->query->findNearestPoly( pos, extents, &filter, &nearRef, p ) ) )
 	{
 		return false;
 	}
@@ -87,13 +87,14 @@ static struct
 	rVec start;
 	bool validPathStart;
 	NavData_t *nav;
+	dtQueryFilter filter; // default include-all filter
 } cmd;
 
 static void BotDrawNavEdit( DebugDrawQuake *dd )
 {
 	rVec p;
 
-	if ( cmd.enabled && GetPointPointedTo( cmd.nav, p ) )
+	if ( cmd.enabled && GetPointPointedTo( cmd.nav, cmd.filter, p ) )
 	{
 		unsigned int col = duRGBA( 255, 255, 255, 220 );
 		dd->begin( DU_DRAW_LINES, 2.0f );
@@ -324,7 +325,7 @@ public:
 
 	void Run( const Cmd::Args &args ) const override
 	{
-		const char usage[] = "Usage: addcon start <dir> (radius)\n"
+		const char usage[] = "Usage: addcon start <dir> (<radius> (jetpack))\n"
 		                     " addcon end";
 		const char *arg = nullptr;
 
@@ -365,19 +366,36 @@ public:
 				return;
 			}
 
-			if ( GetPointPointedTo( cmd.nav, cmd.pc.start ) )
+			if ( GetPointPointedTo( cmd.nav, cmd.filter, cmd.pc.start ) )
 			{
 				cmd.pc.area = DT_TILECACHE_WALKABLE_AREA;
 				cmd.pc.flag = POLYFLAGS_WALK;
 				cmd.pc.userid = 0;
+				cmd.pc.radius = DEFAULT_CONNECTION_SIZE;
 
-				if ( args.Argc() == 4 )
+				if ( args.Argc() >= 4 )
 				{
-					cmd.pc.radius = std::max( atoi( args.Argv( 3 ).c_str() ), 10 );
+					float val = 0.f;
+					if ( !Str::ToFloat( args.Argv( 3 ), val ) || val < 10.f )
+					{
+						Print( "Invalid argument for radius, must be 10 or more" );
+						return;
+					}
+					cmd.pc.radius = val;
 				}
-				else
+				if ( args.Argc() == 5 )
 				{
-					cmd.pc.radius = DEFAULT_CONNECTION_SIZE;
+					// TODO: only allow this for the human_naked class
+					const std::string &subArg = args.Argv( 4 );
+					if ( Q_stricmp( subArg.c_str(), "jetpack" ) == 0 )
+					{
+						cmd.pc.flag = POLYFLAGS_JETPACK;
+					}
+					else
+					{
+						Print( "Invalid argument for flags, must be jetpack if specified" );
+						return;
+					}
 				}
 				cmd.offBegin = true;
 			}
@@ -394,7 +412,7 @@ public:
 				return;
 			}
 
-			if ( GetPointPointedTo( cmd.nav, cmd.pc.end ) )
+			if ( GetPointPointedTo( cmd.nav, cmd.filter, cmd.pc.end ) )
 			{
 				cmd.nav->process.con.addConnection( cmd.pc );
 
@@ -423,6 +441,134 @@ public:
 		else
 		{
 			Print( usage );
+		}
+	}
+};
+
+// return the navcon number and true if the targetPoint is at the navcon start,
+// false if it is at the end
+// return -1 and an unspecified boolean value if the targetPoint is at neither of them
+static std::tuple< int, bool > findClosestNavcon( OffMeshConnections &cons, rVec &targetPoint )
+{
+	int resultIndex = -1;
+	float resultDistanceSquare = std::numeric_limits<float>::max();
+	bool resultIsStart = true;
+	for ( int i = 0; i < cons.offMeshConCount; i++ )
+	{
+		int n = i * 6;
+		// look at start and end points
+		for ( int count = 0; count < 2; count++ )
+		{
+			rVec navconVertex = rVec::Load( &cons.verts[ n + count * 3 ] );
+			float distanceSquare = DistanceSquared( targetPoint, navconVertex );
+			if ( distanceSquare <= Square( cons.rad[ i ] ) && distanceSquare < resultDistanceSquare )
+			{
+				resultIndex = i;
+				resultDistanceSquare = distanceSquare;
+				resultIsStart = count == 0;
+			}
+		}
+	}
+	return std::tie( resultIndex, resultIsStart );
+}
+
+class ViewconCmd: public Cmd::StaticCmd
+{
+public:
+	ViewconCmd() : StaticCmd( "viewcon", "display information about a navcon connection (during navedit)" ) {}
+
+	void Run( const Cmd::Args &args ) const override
+	{
+		if ( args.Argc() != 1 )
+		{
+			PrintUsage( args, "" );
+			return;
+		}
+
+		if ( !cmd.enabled )
+		{
+			return;
+		}
+
+		OffMeshConnections &cons = cmd.nav->process.con;
+		rVec targetPoint;
+		if ( GetPointPointedTo( cmd.nav, cmd.filter, targetPoint ) )
+		{
+			int i;
+			bool isStart;
+			std::tie( i, isStart ) = findClosestNavcon( cons, targetPoint );
+			if ( i < 0 )
+			{
+				Print( "no navcon here" );
+				return;
+			}
+			int n = i * 6;
+			Print( "navcon %s^*, from ( %.0f, %.0f, %.0f ) to ( %.0f, %.0f, %.0f ), %s, radius %.0f%s",
+			       isStart ? "^2start" : "^3end",
+			       cons.verts[ n ], cons.verts[ n + 2 ], cons.verts[ n + 1 ],
+			       cons.verts[ n + 3 ], cons.verts[ n + 5 ], cons.verts[ n + 4 ],
+			       cons.dirs[ i ] == 0 ? "oneway" : "twoway", cons.rad[ i ],
+			       cons.flags[ i ] == POLYFLAGS_JETPACK ? ", jetpack" : "");
+		}
+	}
+};
+
+class DelconCmd: public Cmd::StaticCmd
+{
+public:
+	DelconCmd() : StaticCmd( "delcon", "delete a navcon connection (during navedit)" ) {}
+
+	void Run( const Cmd::Args &args ) const override
+	{
+		if ( args.Argc() != 1 )
+		{
+			PrintUsage( args, "" );
+			return;
+		}
+
+		if ( !cmd.enabled )
+		{
+			return;
+		}
+
+		OffMeshConnections &cons = cmd.nav->process.con;
+		rVec targetPoint;
+		if ( GetPointPointedTo( cmd.nav, cmd.filter, targetPoint ) )
+		{
+			int i;
+			bool unused;
+			std::tie( i, unused ) = findClosestNavcon( cons, targetPoint );
+			
+			if ( i < 0 )
+			{
+				Print( "no navcon here" );
+				return;
+			}
+
+			int n = i * 6;
+			rVec start = rVec::Load( &cons.verts[ n ] );
+			rVec end = rVec::Load( &cons.verts[ n + 3 ] );
+
+			cons.delConnection( i );
+
+			rVec boxMins, boxMaxs;
+			for ( int k = 0; k < 3; k++ )
+			{
+				std::tie( boxMins[ k ], boxMaxs[ k ] ) = std::minmax( start[ k ], end[ k ] );
+			}
+
+			boxMins[ 1 ] -= 10;
+			boxMaxs[ 1 ] += 10;
+
+			// rebuild affected tiles
+			dtCompressedTileRef refs[ 32 ];
+			int tc = 0;
+			cmd.nav->cache->queryTiles( boxMins, boxMaxs, refs, &tc, 32 );
+
+			for ( int k = 0; k < tc; k++ )
+			{
+				cmd.nav->cache->buildNavMeshTile( refs[ k ], cmd.nav->mesh );
+			}
 		}
 	}
 };
@@ -468,7 +614,7 @@ public:
 		}
 		else if ( !Q_stricmp( arg, "startpath" ) )
 		{
-			if ( GetPointPointedTo( cmd.nav, cmd.start ) )
+			if ( GetPointPointedTo( cmd.nav, cmd.filter, cmd.start ) )
 			{
 				cmd.validPathStart = true;
 			}
@@ -480,7 +626,7 @@ public:
 		else if ( !Q_stricmp( arg, "endpath" ) )
 		{
 			rVec end;
-			if ( GetPointPointedTo( cmd.nav, end ) && cmd.validPathStart )
+			if ( GetPointPointedTo( cmd.nav, cmd.filter, end ) && cmd.validPathStart )
 			{
 				dtPolyRef startRef;
 				dtPolyRef endRef;
@@ -490,10 +636,10 @@ public:
 				rVec nearPoint;
 				rVec extents( 300, 300, 300 );
 
-				cmd.nav->query->findNearestPoly( cmd.start, extents, &cmd.nav->filter, &startRef, nearPoint );
-				cmd.nav->query->findNearestPoly( end, extents, &cmd.nav->filter, &endRef, nearPoint );
+				cmd.nav->query->findNearestPoly( cmd.start, extents, &cmd.filter, &startRef, nearPoint );
+				cmd.nav->query->findNearestPoly( end, extents, &cmd.filter, &endRef, nearPoint );
 
-				cmd.nav->query->findPath( startRef, endRef, cmd.start, end, &cmd.nav->filter, path, &npath, maxPath );
+				cmd.nav->query->findPath( startRef, endRef, cmd.start, end, &cmd.filter, path, &npath, maxPath );
 			}
 		}
 		else
@@ -510,6 +656,8 @@ void BotRegisterNavEdit()
 		static struct {
 			NaveditCmd navedit;
 			AddconCmd addcon;
+			ViewconCmd viewcon;
+			DelconCmd delcon;
 			NavtestCmd navtest;
 		} commandRegistration;
 	}
